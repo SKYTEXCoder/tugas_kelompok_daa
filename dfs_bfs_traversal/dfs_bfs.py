@@ -286,7 +286,77 @@ class Graph:
             print(f"An error has occured while generating the topological sorting: {exception}")
 
     def generate_bfs_tree(self, start_node=None):
-        pass
+        """
+        Performs Breadth-First Search (BFS) traversal starting from the specified node
+        and generates a BFS tree visualization. Each node in the visualization will have
+        a number above it representing the shortest path length (in edges) from the start node.
+        """
+        if not self.adjacency_list:
+            print("The current graph is empty. Cannot perform BFS traversal.")
+            return
+
+        if start_node not in self.adjacency_list:
+            print(f"Error: Start node '{start_node}' does not exist in the currently-loaded graph data.")
+            return
+
+        distance = {node: None for node in self.adjacency_list}
+        parent = {node: None for node in self.adjacency_list}
+        visited = {node: False for node in self.adjacency_list}
+        queue = deque()
+
+        distance[start_node] = 0
+        visited[start_node] = True
+        queue.append(start_node)
+
+        bfs_edges = []
+
+        while queue:
+            current = queue.popleft()
+            for neighbor in self.adjacency_list[current]:
+                if not visited[neighbor]:
+                    visited[neighbor] = True
+                    distance[neighbor] = distance[current] + 1
+                    parent[neighbor] = current
+                    bfs_edges.append((current, neighbor))
+                    queue.append(neighbor)
+
+        dot = graphviz.Digraph(comment='BFS Tree', format='png')
+        dot.attr(rankdir='TB')
+        dot.attr('node', shape='circle', color='orange', penwidth='3',
+            style='filled', fontname='Arial', fontweight='bold',
+            fillcolor='lightblue'
+        )
+        
+        for node in self.adjacency_list:
+            if distance[node] is not None:
+                label = f"{distance[node]}\n{node}"
+                dot.node(node, label)
+            else:
+                dot.node(node, node, color='gray', fillcolor='white')
+
+        for u, v in bfs_edges:
+            dot.edge(u, v)
+
+        try:
+            dot.view(cleanup=True)
+            print(f"\nThe BFS Tree has been successfully generated and opened in your default image viewer. Starting from node '{start_node}'.")
+            print("Each node shows the shortest path length (in edges) from the start node above its name.")
+            save_option = input("Would you also like to save the BFS Tree visualization into a file? (y/N): ").strip().lower()
+            if save_option.startswith('y'):
+                root = tk.Tk()
+                root.withdraw()
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension=".png",
+                    filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+                    title="Save BFS Tree Visualization As PNG"
+                )
+                if file_path:
+                    dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
+                    print(f"BFS tree visualization has been successfully saved into '{file_path}'")
+                else:
+                    print("Save operation successfully cancelled.")
+        except Exception as exception:
+            print(f"An error has occured while generating the BFS tree: {exception}")
 
 def print_menu_options():
     """Prints the interactive menu options for the program's user."""
