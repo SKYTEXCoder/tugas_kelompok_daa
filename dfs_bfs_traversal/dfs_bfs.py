@@ -1,5 +1,7 @@
 from collections import deque
 import re, graphviz
+import tkinter as tk
+from tkinter import filedialog
 
 class Graph:
     def __init__(self):
@@ -29,36 +31,77 @@ class Graph:
             print(f"An edge from '{from_node}' to '{to_node}' already exists.")
             return False
         
-    def display_graph(self, file_name):
-        """Displays the current representation of the graph using Graphviz."""
-        dot = graphviz.Digraph(comment='PNG Representation of the Current Graph')
+    def display_graph(self, save_to_file=False):
+        """
+        Displays the current representation of the graph using Graphviz.
+        Optionally saves the graph to a PNG file if save_to_file is True.
+        :param save_to_file: If True, saves the graph to a PNG file.
+        """
+        dot = graphviz.Digraph(comment='Graph Visualization', format='png')
         dot.attr(rankdir='LR')
-        dot.attr('node', shape='ellipse', color='orange', penwidth='3', style='solid')
+        dot.attr('node', shape='ellipse', color='orange', penwidth='3', style='solid', fontname='Arial', fontweight='bold')
         for node, edges in self.adjacency_list.items():
+            dot.node(node)
             for edge in edges:
                 dot.edge(node, edge)
-        dot.render(file_name, format='png', cleanup=True)
-        print(f"A visualized representation of the currently-loaded graph data has been saved into a file named '{file_name}.png'.")
-
-    def save_graph_to_dot_file(self, file_name):
-        """Saves the current;y-loaded graph data into a GraphViz .DOT file."""
         try:
-            with open(f"{file_name}.dot", "w") as file:
-                file.write("digraph G {\n}")
+            dot.view(cleanup=True)
+            print("Graph visualization has been successfully opened in your default image viewer.")
+            if save_to_file:
+                root = tk.Tk()
+                root.withdraw()
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension=".png",
+                    filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+                    title="Save Graph Visualization As PNG"
+                )
+                if file_path:
+                    dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
+                    print(f"Graph visualization has been successfully saved to '{file_path}'.")
+                else:
+                    print("Save operation cancelled.")
+        except Exception as exception:
+            print(f"An error occurred while trying to display/save the graph: {exception}")
+
+    def save_graph_to_dot_file(self, file_name=None):
+        """Saves the currently-loaded graph data into a GraphViz .DOT file using a file dialog."""
+        root = tk.Tk()
+        root.withdraw()
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".dot",
+            filetypes=[("DOT files", "*.dot"), ("All files", "*.*")],
+            title="Save Current Graph Data As A GraphViz .DOT File"
+        )
+        if not file_path:
+            print("Save operation cancelled.")
+            return
+        try:
+            with open(file_path, "w") as file:
+                file.write("digraph G {\n")
                 for node in self.adjacency_list:
                     file.write(f'    "{node}";\n')
                 for node, edges in self.adjacency_list.items():
                     for edge in edges:
                         file.write(f'    "{node}" -> "{edge}";\n')
                 file.write('}\n')
-            print(f"The currently-loaded graph data has been successfully saved into '{file_name}.dot'.")
+            print(f"The currently-loaded graph data has been successfully saved into '{file_path}'.")
         except Exception as exception:
             print(f"An error has occured while trying to save the currently-loaded graph data into a GraphViz .DOT file: {exception}")
 
-    def load_graph_from_dot_file(self, file_name):
-        """Load a graph from a GraphViz .dot file."""
+    def load_graph_from_dot_file(self, file_name=None):
+        """Load a graph from a GraphViz .dot file using a file dialog."""
+        root = tk.Tk()
+        root.withdraw()
+        file_path = filedialog.askopenfilename(
+            defaultextension=".dot",
+            filetypes=[("DOT files", "*.dot"), ("All files", "*.*")],
+            title="Open Graph .DOT File"
+        )
+        if not file_path:
+            print("Load operation cancelled.")
+            return
         try:
-            with open(f'{file_name}.dot', 'r') as f:
+            with open(file_path, 'r') as f:
                 self.adjacency_list.clear()
                 lines = f.readlines()
                 node_pattern = re.compile(r'^\s*"([^"]+)"\s*;$')
@@ -78,7 +121,7 @@ class Graph:
                             self.adjacency_list[to_node] = []
                         if to_node not in self.adjacency_list[from_node]:
                             self.adjacency_list[from_node].append(to_node)
-            print(f"Graph data has been successfully loaded into the current instance of the program from '{file_name}.dot'.")
+            print(f"Graph data has been successfully loaded into the current instance of the program from '{file_path}'.")
         except Exception as error:
             print(f"An error has occured while trying to load a graph data: {error}")
 
@@ -133,10 +176,8 @@ def main():
             if not graph.adjacency_list:
                 print("The current graph is still empty. Please add new nodes and edges into the graph first before even trying to display the graph.")
                 continue
-            file_name = input("Please enter a valid filename for the PNG representation of the currently-loaded graph data (WITHOUT the extension) (Optional, leave blank for default): ").strip()
-            if not file_name:
-                file_name = "current_graph_representation"
-            graph.display_graph(file_name)
+            save_option = input("Would you like to save the visualization of the currently-loaded graph data into a file? (y/N): ").strip().lower()
+            graph.display_graph(save_to_file=save_option.startswith('y'))
         elif choice == '4':
             if not graph.adjacency_list:
                 print("The current graph is still empty. Please add new nodes and edges into the graph first before performing DFS traversal.")
@@ -158,17 +199,9 @@ def main():
             else:
                 graph.generate_bfs_tree(bfs_starting_node)
         elif choice == '6':
-            file_name = input("Enter a valid filename to save the current graph data (WITHOUT the extension): ").strip()
-            if file_name:
-                graph.save_graph_to_dot_file(file_name)
-            else:
-                print("The name of the file CANNOT be empty. Please try again.")
+            graph.save_graph_to_dot_file()
         elif choice == '7':
-            file_name = input("Enter a valid filename to load the graph data from (WITHOUT the extension): ").strip()
-            if file_name:
-                graph.load_graph_from_dot_file(file_name)
-            else:
-                print("The name of the file CANNOT be empty. Please try again.")
+            graph.load_graph_from_dot_file()
         elif choice == '8':
             print("Exiting the application. Goodbye! 👋")
             programIsRunning = False
