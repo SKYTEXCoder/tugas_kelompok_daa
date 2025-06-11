@@ -207,7 +207,7 @@ class Graph:
             print("F: Forward Edges (Red)")
             print("C: Cross Edges (Blue)")
             
-            save_option = input("Would you like to save the DFS forest visualization into a file? (y/N): ").strip().lower()
+            save_option = input("Would you also like to save the DFS Forest/Tree visualization into a file? (y/N): ").strip().lower()
             if save_option.startswith('y'):
                 root = tk.Tk()
                 root.withdraw()
@@ -220,14 +220,73 @@ class Graph:
                     dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
                     print(f"DFS forest visualization has been successfully saved into '{file_path}'")
                 else:
-                    print("Save operation cancelled.")
+                    print("Save operation successfully cancelled.")
         except Exception as exception:
             print(f"An error has occured while generating the DFS forest: {exception}")
 
+        create_topological_sorting = input("Would you also like to create a topological sorting of the currently-loaded graph data using the generated DFS forest? (y/N): ").strip().lower()
+        
+        if create_topological_sorting.startswith('y'):
+            self.create_topological_sorting(discovery_times, finishing_times)
+        
+    def create_topological_sorting(self, discovery_times, finishing_times):
+        
+        """
+        Creates a topological sorting visualization based on the DFS forest finishing times.
+        Nodes are arranged left-to-right based on decreasing-ordered finishing times.
+        """
+        
+        sorted_nodes = sorted(
+            [node for node in self.adjacency_list.keys() if node in finishing_times],
+            key=lambda node: finishing_times[node],
+            reverse=True
+        )
+        
+        dot = graphviz.Digraph(comment='Topological Sorting', format='png')
+        dot.attr(rank='same', rankdir='LR')
+        dot.attr('node', shape='circle', color='orange', penwidth='3', 
+            style='filled', fontname='Arial', fontweight='bold', 
+            fillcolor='lightblue'
+        )
+
+        for node in sorted_nodes:
+            if node in finishing_times:
+                label = f"{node}\n{discovery_times[node]}/{finishing_times[node]}"
+                dot.node(node, label)
+                
+        for node in sorted_nodes:
+            for neighbor in self.adjacency_list[node]:
+                dot.edge(node, neighbor)
+             
+        with dot.subgraph() as subgraph:
+            subgraph.attr(rank='same')
+            for index in range(len(sorted_nodes) - 1):
+                if sorted_nodes[index] in finishing_times and sorted_nodes[index + 1] in finishing_times:
+                    subgraph.edge(sorted_nodes[index], sorted_nodes[index + 1], style='invis')
+        
+        try:
+            dot.view(cleanup=True)
+            print("\nThe topological sorting has been successfully generated and opened in your default image viewer.")
+            print("Nodes are arranged from left-to-right based on decreasing finishing times.")
+            save_option = input("Would you also like to save the topological sorting visualization into an actual file? (y/N): ").strip().lower()
+            if save_option.startswith('y'):
+                root = tk.Tk()
+                root.withdraw()
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension='png',
+                    filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+                    title = "Save Topological Sorting Visualization As A PNG File"
+                )
+                if file_path:
+                    dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
+                    print(f"Topological sorting visualization has been successfully saved into '{file_path}'")
+                else:
+                    print("Save operation successfully cancelled.")
+        except Exception as exception:
+            print(f"An error has occured while generating the topological sorting: {exception}")
+
     def generate_bfs_tree(self, start_node=None):
-
         pass
-
 
 def print_menu_options():
     """Prints the interactive menu options for the program's user."""
