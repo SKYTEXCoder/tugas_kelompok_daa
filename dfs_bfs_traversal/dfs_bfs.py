@@ -123,11 +123,106 @@ class Graph:
                             self.adjacency_list[from_node].append(to_node)
             print(f"Graph data has been successfully loaded into the current instance of the program from '{file_path}'.")
         except Exception as error:
-            print(f"An error has occured while trying to load a graph data: {error}")
+            print(f"An error has occured while trying to load a graph data file: {error}")
+            
+    def print_adjacency_list(self):
+        """Prints the current adjacency list representation of the graph."""
+        print("")
+        if not self.adjacency_list:
+            print("The current graph is empty.")
+            return
+        print("Current Adjacency List Representation of the Graph:")
+        for node, edges in self.adjacency_list.items():
+            print(f"{node}: {', '.join(edges) if edges else 'NO EDGES/CONNECTIONS'}")
+        print("")
 
     def generate_dfs_forest(self, start_node=None):
-
-        pass
+        """
+        Performs Depth-First Search (DFS) traversal starting from the specified node and generates a DFS forest visualization with specific edge classifications.
+        Edge types:
+        - T: Tree Edges (Edges that are used in the DFS traversal)
+        - B: Back Edges (Edges that point a descendant node to an ancestor node)
+        - F: Forward Edges (Edges that point an ancestor node to a descendant node)
+        - C: Cross Edges (Any other edges that do not fit the above categories)
+        :param start_node: The node from which to start the DFS traversal. If None, starts from any unvisited node.
+        """
+        
+        if not self.adjacency_list:
+            print("The current graph is empty. Cannot perform DFS traversal.")
+            return
+        
+        if start_node not in self.adjacency_list:
+            print(f"Error: Start node '{start_node}' does not exist in the currently-loaded graph data.")
+            return
+        
+        discovery_times = {}
+        finishing_times = {}
+        edge_types = {}
+        time = [0]
+        
+        def dfs_visit(node, parent=None):
+            time[0] += 1
+            discovery_times[node] = time[0]
+            
+            for neighbor in self.adjacency_list[node]:
+                edge = (node, neighbor)
+                
+                if neighbor not in discovery_times:
+                    edge_types[edge] = 'T'
+                    dfs_visit(neighbor, node)
+                else:
+                    if neighbor not in finishing_times:
+                        edge_types[edge] = 'B'
+                    else:
+                        if discovery_times[neighbor] > discovery_times[node]:
+                            edge_types[edge] = 'F'
+                        else:
+                            edge_types[edge] = 'C'
+                            
+            time[0] += 1
+            finishing_times[node] = time[0]
+            
+        dfs_visit(start_node)
+        
+        dot = graphviz.Digraph(comment='DFS Forest', format='png')
+        dot.attr(rankdir='LR')
+        
+        for node in self.adjacency_list:
+            if node in discovery_times:
+                label = f"{node}\n{discovery_times[node]}/{finishing_times[node]}"
+                dot.node(node, label, shape='circle', color='orange', style='filled', fillcolor='lightblue')
+            else:
+                dot.node(node, node, shape='circle', color='gray')
+        
+        edge_colors = {'T': 'black', 'B': 'gold', 'F': 'red', 'C': 'blue'}
+        for (source, destination), edge_type in edge_types.items():
+            dot.edge(source, destination, label=edge_type, color=edge_colors[edge_type], fontcolor=edge_colors[edge_type], penwidth='2')
+        
+        try:
+            dot.view(cleanup=True)
+            print(f"\nThe DFS Forest has been successfully generated and opened in your default image viewer. Starting from node '{start_node}'.")
+            print("Edge classifications:")
+            print("T: Tree Edges (Black)")
+            print("B: Back Edges (Gold)")
+            print("F: Forward Edges (Red)")
+            print("C: Cross Edges (Blue)")
+            
+            save_option = input("Would you like to save the DFS forest visualization into a file? (y/N): ").strip().lower()
+            if save_option.startswith('y'):
+                root = tk.Tk()
+                root.withdraw()
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension=".png",
+                    filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+                    title="Save DFS Forest Visualization As PNG"
+                )
+                if file_path:
+                    dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
+                    print(f"DFS forest visualization has been successfully saved into '{file_path}'")
+                else:
+                    print("Save operation cancelled.")
+        except Exception as exception:
+            print(f"An error has occured while generating the DFS forest: {exception}")
 
     def generate_bfs_tree(self, start_node=None):
 
@@ -182,6 +277,7 @@ def main():
             if not graph.adjacency_list:
                 print("The current graph is still empty. Please add new nodes and edges into the graph first before performing DFS traversal.")
                 continue
+            graph.print_adjacency_list()
             dfs_starting_node = input("Enter the name of the starting node for DFS traversal: ").strip()
             if not dfs_starting_node:
                 print("The name of the starting node for DFS traversal CANNOT be empty. Please try again.")
@@ -192,6 +288,7 @@ def main():
             if not graph.adjacency_list:
                 print("The current graph is still empty. Please add new nodes and edges into the graph first before performing BFS traversal.")
                 continue
+            graph.print_adjacency_list()
             bfs_starting_node = input("Enter the name of the starting node for BFS traversal: ").strip()
             if not bfs_starting_node:
                 print("The name of the starting node for BFS traversal CANNOT be empty. Please try again.")
