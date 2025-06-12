@@ -65,6 +65,17 @@ class Graph:
 
     def save_graph_to_dot_file(self, file_name=None):
         """Saves the currently-loaded graph data into a GraphViz .DOT file using a file dialog."""
+        print("\nCurrent Adjacency List Representation of the Graph (to be saved): ")
+        if not self.adjacency_list:
+            print("The current graph is empty. Nothing to save.")
+            return
+        for node, edges in self.adjacency_list.items():
+            print(f"{node}: {', '.join(edges) if edges else 'NO EDGES/CONNECTIONS'}")
+        print("")
+        confirmation = input("Are you sure that you want to continue and save this graph data into a GraphViz .DOT file? (y/N): ").strip().lower()
+        if not confirmation.startswith('y'):
+            print("Save operation cancelled.")
+            return
         root = tk.Tk()
         root.withdraw()
         file_path = filedialog.asksaveasfilename(
@@ -101,6 +112,7 @@ class Graph:
             print("Load operation cancelled.")
             return
         try:
+            temporary_adjacency_list = {}
             with open(file_path, 'r') as f:
                 self.adjacency_list.clear()
                 lines = f.readlines()
@@ -111,16 +123,25 @@ class Graph:
                     edge_match = edge_pattern.match(line)
                     if node_match:
                         node = node_match.group(1)
-                        if node not in self.adjacency_list:
-                            self.adjacency_list[node] = []
+                        if node not in temporary_adjacency_list:
+                            temporary_adjacency_list[node] = []
                     elif edge_match:
                         from_node, to_node = edge_match.group(1), edge_match.group(2)
-                        if from_node not in self.adjacency_list:
-                            self.adjacency_list[from_node] = []
-                        if to_node not in self.adjacency_list:
-                            self.adjacency_list[to_node] = []
-                        if to_node not in self.adjacency_list[from_node]:
-                            self.adjacency_list[from_node].append(to_node)
+                        if from_node not in temporary_adjacency_list:
+                            temporary_adjacency_list[from_node] = []
+                        if to_node not in temporary_adjacency_list:
+                            temporary_adjacency_list[to_node] = []
+                        if to_node not in temporary_adjacency_list[from_node]:
+                            temporary_adjacency_list[from_node].append(to_node)
+            print("\nAdjacency List Representation of the selected GraphViz .DOT file: ")
+            for node, edges in temporary_adjacency_list.items():
+                print(f"{node}: {','.join(edges) if edges else 'NO EDGES/CONNECTIONS'}")
+            print("")
+            confirmation = input("Are you sure that you want to load this graph data into the currently-running instance of the program? (y/N): ").strip().lower()
+            if not confirmation.startswith('y'):
+                print("Load operation cancelled.")
+                return
+            self.adjacency_list = temporary_adjacency_list
             print(f"Graph data has been successfully loaded into the current instance of the program from '{file_path}'.")
         except Exception as error:
             print(f"An error has occured while trying to load a graph data file: {error}")
@@ -429,7 +450,10 @@ def main():
         elif choice == '7':
             graph.load_graph_from_dot_file()
         elif choice == '8':
-            print("Exiting the application. Goodbye! 👋")
+            save_choice = input("Would you like to save the currently-loaded graph data configuration into a GraphViz .DOT file first before exiting? (y/N): ").strip().lower()
+            if save_choice.startswith('y'):
+                graph.save_graph_to_dot_file()
+            print("Exiting the graph application. Goodbye! 👋")
             programIsRunning = False
             break
         else:
