@@ -83,7 +83,7 @@ def draw_graph_with_mst(all_edges, mst_edges, filename='graph_with_mst'):
     dot = Graph(comment='Graph with MST')
 
     for u, v, w in all_edges:
-        if [u, v, w] in mst_edges or [v, u, w] in mst_edges:  # MST edge
+        if [u, v, w] in mst_edges or [v, u, w] in mst_edges:
             dot.edge(str(u), str(v), label=str(w), color='green', penwidth='2')
         else:  # non-MST edge
             dot.edge(str(u), str(v), label=str(w))
