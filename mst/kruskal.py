@@ -1,4 +1,6 @@
-class Graph: 
+from graphviz import Graph
+
+class MyGraph: 
 
     def __init__(self, vertices): 
         self.V = vertices 
@@ -17,7 +19,6 @@ class Graph:
         return parent[i] 
 
     # Method untuk merge dua set
-    # (uses union by rank) 
     def union(self, parent, rank, x, y): 
 
         # Merge set yang rank nya lebih kecil ke set yang lebih besar
@@ -37,10 +38,10 @@ class Graph:
         # Array untuk hasil MST
         result = [] 
 
-        # An index variable, used for sorted edges 
+        # Index untuk sorted edges
         i = 0
 
-        # An index variable, used for result[] 
+        # Index untuk iterasi  node mst
         e = 0
 
         # Urutkan sisi sesuai weight dari yang paling kecil
@@ -57,7 +58,7 @@ class Graph:
         # Jumlah node MST pasti berjumlah v - 1 (v = jumlah node)
         while e < self.V - 1: 
 
-            # Iterate dari weight yang paling kecil, set x untuk mencari parent dari u begitu pula dengan y dan v
+            # Iterasi dari weight yang paling kecil, set x untuk mencari parent dari u begitu pula dengan y dan v
             u, v, w = self.graph[i] 
             i = i + 1
             x = self.find(parent, u) 
@@ -76,15 +77,41 @@ class Graph:
             minimumCost += weight 
             print("%d -- %d == %d" % (u, v, weight)) 
         print("Minimum Spanning Tree:", minimumCost) 
+        return result
 
+def draw_graph_with_mst(all_edges, mst_edges, filename='graph_with_mst'):
+    dot = Graph(comment='Graph with MST')
+
+    for u, v, w in all_edges:
+        if [u, v, w] in mst_edges or [v, u, w] in mst_edges:  # MST edge
+            dot.edge(str(u), str(v), label=str(w), color='green', penwidth='2')
+        else:  # non-MST edge
+            dot.edge(str(u), str(v), label=str(w))
+
+    dot.render(filename=filename, format='png', cleanup=True)
 
 if __name__ == '__main__': 
-    g = Graph(4) 
-    g.addEdge(0, 1, 10)  
-    g.addEdge(0, 2, 6) 
-    g.addEdge(0, 3, 2) 
-    g.addEdge(1, 3, 1) 
-    g.addEdge(2, 3, 4) 
+    # g = Graph(4) 
+    # g.addEdge(0, 1, 10)  
+    # g.addEdge(0, 2, 6) 
+    # g.addEdge(0, 3, 2) 
+    # g.addEdge(1, 3, 1) 
+    # g.addEdge(2, 3, 4) 
+
+    g = MyGraph(6)
+    g.addEdge(0, 1, 1)
+    g.addEdge(0, 2, 3)
+    g.addEdge(1, 2, 6)
+    g.addEdge(1, 4, 8)
+    g.addEdge(1, 3, 7)
+    g.addEdge(2, 4, 5)
+    g.addEdge(2, 3, 2)
+    g.addEdge(3, 5, 13)
+    g.addEdge(3, 4, 9)
+    g.addEdge(4, 5, 5)
 
     # Lakukan algoritma 
-    g.KruskalMST()
+    mst = g.KruskalMST()
+    
+    # Gambar graph
+    draw_graph_with_mst(g.graph, mst, filename='mst')
