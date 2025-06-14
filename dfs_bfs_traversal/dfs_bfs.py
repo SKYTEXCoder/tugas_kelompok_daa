@@ -1,130 +1,215 @@
 from collections import deque
-import re, graphviz
-import tkinter as tk
+import re, graphviz, tkinter
 from tkinter import filedialog
 
 class Graph:
     def __init__(self):
+        
+        """
+        Inisialisasi objek Graph.
+        Fungsi ini akan membuat sebuah dictionary kosong bernama adjacency_list
+        yang digunakan untuk menyimpan representasi adjacency list dari graf.
+        Setiap key pada dictionary ini adalah nama node, dan value-nya adalah list node tujuan (edge) dari node tersebut.
+        """
+        
         self.adjacency_list = {}
         
+        
     def add_node(self, node_name):
+        
+        """
+        Adds a new node to the graph if it does not already exist.
+        Parameters:
+            node_name (str): The name of the node to be added.
+        Returns:
+            bool: True if the node was successfully added, False if the node already exists.
+        Side Effects:
+            Prints a message indicating whether the node was added or already exists in the graph.
+        """
+        
         if node_name not in self.adjacency_list:
             self.adjacency_list[node_name] = []
-            print(f"Node '{node_name}' added.")
+            print(f"Node '{node_name}' berhasil ditambahkan ke dalam konfigurasi data graf saat ini.")
             return True
+        
         else:
-            print(f"Node '{node_name} already exists in the current graph.'")
+            print(f"Node yang bernama '{node_name}' sudah ada di dalam konfigurasi data graf yang termuat saat ini.")
             return False
+        
         
     def add_edge(self, from_node, to_node):
+        """
+        Adds a directed edge from 'from_node' to 'to_node' in the graph.
+        Parameters:
+            from_node (hashable): The starting node of the edge.
+            to_node (hashable): The ending node of the edge.
+        Returns:
+            bool: True if the edge was successfully added, False otherwise.
+        Notes:
+            - If either 'from_node' or 'to_node' does not exist in the graph, an error message is printed and the edge is not added.
+            - If the edge already exists, a message is printed and the edge is not added.
+            - Successfully adds the edge and prints a confirmation message if it does not already exist.
+        """
+        
         if from_node not in self.adjacency_list:
-            print(f"Error: Origin Node '{from_node}' does not exist in the current graph. Cannot add an edge.")
-            return False
-        if to_node not in self.adjacency_list:
-            print(f"Error: Destination Node '{to_node}' does not exist in the current graph. Cannot add an edge.")
-            return False
-        if to_node not in self.adjacency_list[from_node]:
-            self.adjacency_list[from_node].append(to_node)
-            print(f"Directed edge added from node '{from_node}' to node '{to_node}'.")
-            return True
-        else:
-            print(f"An edge from '{from_node}' to '{to_node}' already exists.")
+            print(f"Error: Node Asal '{from_node}' tidak ada di graf saat ini. Tidak dapat menambahkan edge.")
             return False
         
+        if to_node not in self.adjacency_list:
+            print(f"Error: Node Tujuan '{to_node}' tidak ada di graf saat ini. Tidak dapat menambahkan edge.")
+            return False
+        
+        if to_node not in self.adjacency_list[from_node]:
+            self.adjacency_list[from_node].append(to_node)
+            print(f"Edge terarah ditambahkan dari node '{from_node}' ke node '{to_node}'.")
+            return True
+        
+        else:
+            print(f"Edge dari '{from_node}' ke '{to_node}' sudah ada.")
+            return False
+        
+        
     def display_graph(self, save_to_file=False):
+        
         """
-        Displays the current representation of the graph using Graphviz.
-        Optionally saves the graph to a PNG file if save_to_file is True.
-        :param save_to_file: If True, saves the graph to a PNG file.
+        Menampilkan representasi graf saat ini menggunakan library GraphViz.
+        Opsional: menyimpan graf ke file gambar berformat .PNG jika save_to_file bernilai True.
+        :param save_to_file: Jika True, graf akan disimpan ke file PNG.
         """
+        
         dot = graphviz.Digraph(comment='Graph Visualization', format='png')
         dot.attr(rankdir='LR')
         dot.attr('node', shape='ellipse', color='orange', penwidth='3', style='solid', fontname='Arial', fontweight='bold')
+        
         for node, edges in self.adjacency_list.items():
             dot.node(node)
             for edge in edges:
                 dot.edge(node, edge)
+                
         try:
             dot.view(cleanup=True)
-            print("Graph visualization has been successfully opened in your default image viewer.")
+            
+            print("Visualisasi graf berhasil dibuka di image viewer default Anda.")
+            
             if save_to_file:
-                root = tk.Tk()
+                
+                root = tkinter.Tk()
                 root.withdraw()
                 file_path = filedialog.asksaveasfilename(
                     defaultextension=".png",
                     filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
-                    title="Save Graph Visualization As PNG"
+                    title="Simpan Visualisasi Graf Sebagai PNG"
                 )
+                
                 if file_path:
                     dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
-                    print(f"Graph visualization has been successfully saved to '{file_path}'.")
+                    print(f"Visualisasi graf berhasil disimpan ke '{file_path}'.")
+                    
                 else:
-                    print("Save operation cancelled.")
+                    print("Operasi penyimpanan dibatalkan.")
+                    
         except Exception as exception:
-            print(f"An error occurred while trying to display/save the graph: {exception}")
+            print(f"Terjadi kesalahan saat mencoba menampilkan/menyimpan graf: {exception}")
 
-    def save_graph_to_dot_file(self, file_name=None):
-        """Saves the currently-loaded graph data into a GraphViz .DOT file using a file dialog."""
-        print("\nCurrent Adjacency List Representation of the Graph (to be saved): ")
+
+    def save_graph_to_dot_file(self):
+        
+        """
+        Menyimpan data graf yang sedang dimuat ke dalam file GraphViz .DOT menggunakan file dialog.
+        Fungsi ini akan menampilkan adjacency list dari graf saat ini ke terminal,
+        lalu meminta konfirmasi pengguna sebelum menyimpan ke file .DOT.
+        Jika pengguna mengonfirmasi, graf akan disimpan ke file .DOT yang dipilih melalui file dialog.        
+        """
+        
+        print("\nRepresentasi Adjacency List dari Konfigurasi Data Graf Yang Sedang Termuat Saat Ini (yang akan disimpan): " + "KOSONG" if not self.adjacency_list else "")
+        
         if not self.adjacency_list:
-            print("The current graph is empty. Nothing to save.")
+            print("Graf yang termuat saat ini masih kosong. Tidak ada konfigurasi data graf yang dapat disimpan.")
             return
+        
         for node, edges in self.adjacency_list.items():
-            print(f"{node}: {', '.join(edges) if edges else 'NO EDGES/CONNECTIONS'}")
+            print(f"{node}: {', '.join(edges) if edges else 'TIDAK ADA EDGE/ KONEKSI'}")
+            
         print("")
-        confirmation = input("Are you sure that you want to continue and save this graph data into a GraphViz .DOT file? (y/N): ").strip().lower()
+        
+        confirmation = input("Apakah Anda yakin untuk ingin melanjutkan dan menyimpan data graf ini ke dalam file GraphViz berformat .DOT? (y/N): ").strip().lower()
+        
         if not confirmation.startswith('y'):
-            print("Save operation cancelled.")
+            print("Operasi penyimpanan dibatalkan.")
             return
-        root = tk.Tk()
+        
+        root = tkinter.Tk()
         root.withdraw()
         file_path = filedialog.asksaveasfilename(
             defaultextension=".dot",
             filetypes=[("DOT files", "*.dot"), ("All files", "*.*")],
-            title="Save Current Graph Data As A GraphViz .DOT File"
+            title="Simpan Data Graf Saat Ini Sebagai File GraphViz .DOT"
         )
+        
         if not file_path:
-            print("Save operation cancelled.")
+            print("Operasi penyimpanan dibatalkan.")
             return
+        
         try:
             with open(file_path, "w") as file:
                 file.write("digraph G {\n")
+                
                 for node in self.adjacency_list:
                     file.write(f'    "{node}";\n')
+                    
                 for node, edges in self.adjacency_list.items():
+                    
                     for edge in edges:
                         file.write(f'    "{node}" -> "{edge}";\n')
+                        
                 file.write('}\n')
-            print(f"The currently-loaded graph data has been successfully saved into '{file_path}'.")
+                
+            print(f"Data graf yang sedang dimuat saat ini telah berhasil disimpan ke '{file_path}'.")
+            
         except Exception as exception:
-            print(f"An error has occured while trying to save the currently-loaded graph data into a GraphViz .DOT file: {exception}")
+            print(f"Terjadi kesalahan saat mencoba menyimpan data graf yang sedang dimuat saat ini ke dalam file GraphViz .DOT: {exception}")
 
-    def load_graph_from_dot_file(self, file_name=None):
-        """Load a graph from a GraphViz .dot file using a file dialog."""
-        root = tk.Tk()
+
+    def load_graph_from_dot_file(self):
+        
+        """
+        Memuat graf dari file GraphViz .dot menggunakan file dialog.
+        Fungsi ini akan membaca file .DOT yang dipilih pengguna, menampilkan adjacency list
+        hasil parsing file tersebut ke terminal, lalu meminta konfirmasi pengguna sebelum
+        memuat data graf ke dalam program. Jika dikonfirmasi, graf akan dimuat ke program.
+        """
+        
+        root = tkinter.Tk()
         root.withdraw()
         file_path = filedialog.askopenfilename(
             defaultextension=".dot",
             filetypes=[("DOT files", "*.dot"), ("All files", "*.*")],
-            title="Open Graph .DOT File"
+            title="Buka File Graph .DOT"
         )
+        
         if not file_path:
-            print("Load operation cancelled.")
+            print("Operasi pemuatan dibatalkan.")
             return
+        
         try:
+            
             temporary_adjacency_list = {}
+            
             with open(file_path, 'r') as f:
                 self.adjacency_list.clear()
                 lines = f.readlines()
                 node_pattern = re.compile(r'^\s*"([^"]+)"\s*;$')
                 edge_pattern = re.compile(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"\s*;$')
+                
                 for line in lines:
                     node_match = node_pattern.match(line)
                     edge_match = edge_pattern.match(line)
+                    
                     if node_match:
                         node = node_match.group(1)
                         if node not in temporary_adjacency_list:
                             temporary_adjacency_list[node] = []
+                            
                     elif edge_match:
                         from_node, to_node = edge_match.group(1), edge_match.group(2)
                         if from_node not in temporary_adjacency_list:
@@ -133,72 +218,108 @@ class Graph:
                             temporary_adjacency_list[to_node] = []
                         if to_node not in temporary_adjacency_list[from_node]:
                             temporary_adjacency_list[from_node].append(to_node)
-            print("\nAdjacency List Representation of the selected GraphViz .DOT file: ")
+
+            print("\nRepresentasi Adjacency List dari file GraphViz .DOT yang dipilih: " + "KOSONG" if not temporary_adjacency_list else "")
+
             for node, edges in temporary_adjacency_list.items():
-                print(f"{node}: {','.join(edges) if edges else 'NO EDGES/CONNECTIONS'}")
+                print(f"{node}: {','.join(edges) if edges else 'TIDAK ADA EDGE/ KONEKSI'}")
+                
             print("")
-            confirmation = input("Are you sure that you want to load this graph data into the currently-running instance of the program? (y/N): ").strip().lower()
-            if not confirmation.startswith('y'):
-                print("Load operation cancelled.")
-                return
-            self.adjacency_list = temporary_adjacency_list
-            print(f"Graph data has been successfully loaded into the current instance of the program from '{file_path}'.")
-        except Exception as error:
-            print(f"An error has occured while trying to load a graph data file: {error}")
             
+            confirmation = input("Apakah Anda yakin untuk ingin memuat konfigurasi data graf ini ke dalam instance program yang sedang berjalan? (y/N): ").strip().lower()
+            
+            if not confirmation.startswith('y'):
+                print("Operasi pemuatan dibatalkan.")
+                return
+            
+            self.adjacency_list = temporary_adjacency_list
+            
+            print(f"Konfigurasi data graf telah berhasil dimuat ke dalam instance program yang sedang berjalan dari '{file_path}'.")
+            
+        except Exception as error:
+            print(f"Terjadi kesalahan saat mencoba memuat file data graf: {error}")
+
     def print_adjacency_list(self):
-        """Prints the current adjacency list representation of the graph."""
+        
+        """
+        Menampilkan adjacency list dari graf saat ini.
+        Fungsi ini akan mencetak setiap node beserta daftar node tujuan (edge) yang terhubung dengannya.
+        Jika graf kosong, akan menampilkan pesan bahwa graf kosong.
+        """
+        
         print("")
+        
         if not self.adjacency_list:
-            print("The current graph is empty.")
+            print("Konfigurasi graf yang sedang termuat saat ini masih kosong.")
             return
-        print("Current Adjacency List Representation of the Graph:")
+        
+        print("Representasi Adjacency List dari Graf Saat Ini:" + "KOSONG" if not self.adjacency_list else "")
+        
         for node, edges in self.adjacency_list.items():
-            print(f"{node}: {', '.join(edges) if edges else 'NO EDGES/CONNECTIONS'}")
+            print(f"{node}: {', '.join(edges) if edges else 'TIDAK ADA EDGE ATAU KONEKSI'}")
+            
         print("")
 
     def generate_dfs_forest(self, start_node=None):
+        
         """
-        Performs Depth-First Search (DFS) traversal starting from the specified node and generates a DFS forest visualization with specific edge classifications.
-        Edge types:
-        - T: Tree Edges (Edges that are used in the DFS traversal)
-        - B: Back Edges (Edges that point a descendant node to an ancestor node)
-        - F: Forward Edges (Edges that point an ancestor node to a descendant node)
-        - C: Cross Edges (Any other edges that do not fit the above categories)
-        :param start_node: The node from which to start the DFS traversal. If None, starts from any unvisited node.
+        Melakukan traversal Depth-First Search (DFS) mulai dari node yang ditentukan dan menghasilkan visualisasi DFS forest dengan klasifikasi edge tertentu.
+        Tipe edge:
+        - T: Tree Edges (Edge yang digunakan dalam traversal DFS)
+        - B: Back Edges (Edge yang menunjuk dari descendant ke ancestor)
+        - F: Forward Edges (Edge yang menunjuk dari ancestor ke descendant)
+        - C: Cross Edges (Edge lain yang tidak termasuk kategori di atas)
+        :param start_node: Node awal untuk traversal DFS. Jika None, mulai dari node yang belum dikunjungi.
         """
         
         if not self.adjacency_list:
-            print("The current graph is empty. Cannot perform DFS traversal.")
+            print("Graf saat ini kosong. Tidak dapat melakukan traversal DFS.")
             return
         
         if start_node not in self.adjacency_list:
-            print(f"Error: Start node '{start_node}' does not exist in the currently-loaded graph data.")
+            print(f"Error: Node awal '{start_node}' tidak ada dalam data graf yang sedang dimuat.")
             return
         
+        
         discovery_times = {}
+        
         finishing_times = {}
+        
         edge_types = {}
+        
         time = [0]
         
+        
         def dfs_visit(node, parent=None):
+            
             time[0] += 1
             discovery_times[node] = time[0]
             
+            print(f"Node {node} ditemukan pada waktu {discovery_times[node]}")
+
             for neighbor in self.adjacency_list[node]:
+                print(f"Memeriksa tetangga {neighbor} dari {node}")
                 edge = (node, neighbor)
                 
                 if neighbor not in discovery_times:
                     edge_types[edge] = 'T'
                     dfs_visit(neighbor, node)
+                    print(f"Edge {edge} diklasifikasikan sebagai 'T'")
+                    
                 else:
+                    
                     if neighbor not in finishing_times:
                         edge_types[edge] = 'B'
+                        print(f"Edge {edge} diklasifikasikan sebagai 'B'")
+                        
                     else:
                         if discovery_times[neighbor] > discovery_times[node]:
                             edge_types[edge] = 'F'
+                            print(f"Edge {edge} diklasifikasikan sebagai 'F'")
+                            
                         else:
                             edge_types[edge] = 'C'
+                            print(f"Edge {edge} diklasifikasikan sebagai 'C'")
                             
             time[0] += 1
             finishing_times[node] = time[0]
@@ -216,36 +337,40 @@ class Graph:
                 dot.node(node, node, shape='circle', color='gray')
         
         edge_colors = {'T': 'black', 'B': 'gold', 'F': 'red', 'C': 'blue'}
+        
         for (source, destination), edge_type in edge_types.items():
             dot.edge(source, destination, label=edge_type, color=edge_colors[edge_type], fontcolor=edge_colors[edge_type], penwidth='2')
         
         try:
             dot.view(cleanup=True)
-            print(f"\nThe DFS Forest has been successfully generated and opened in your default image viewer. Starting from node '{start_node}'.")
-            print("Edge classifications:")
-            print("T: Tree Edges (Black)")
-            print("B: Back Edges (Gold)")
-            print("F: Forward Edges (Red)")
-            print("C: Cross Edges (Blue)")
             
-            save_option = input("Would you also like to save the DFS Forest/Tree visualization into a file? (y/N): ").strip().lower()
+            print(f"\nDFS Forest berhasil dibuat dan dibuka di image viewer default Anda. Mulai dari node '{start_node}'.")
+            print("Klasifikasi edge:")
+            print("T: Tree Edges (Hitam)")
+            print("B: Back Edges (Emas)")
+            print("F: Forward Edges (Merah)")
+            print("C: Cross Edges (Biru)")
+
+            save_option = input("Apakah Anda juga ingin menyimpan visualisasi DFS Forest/Tree ke dalam file? (y/N): ").strip().lower()
+            
             if save_option.startswith('y'):
-                root = tk.Tk()
+                root = tkinter.Tk()
                 root.withdraw()
                 file_path = filedialog.asksaveasfilename(
                     defaultextension=".png",
                     filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
-                    title="Save DFS Forest Visualization As PNG"
+                    title="Simpan Visualisasi DFS Forest Sebagai PNG"
                 )
                 if file_path:
                     dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
-                    print(f"DFS forest visualization has been successfully saved into '{file_path}'")
+                    print(f"Visualisasi DFS forest telah berhasil disimpan ke dalam '{file_path}'")
                 else:
-                    print("Save operation successfully cancelled.")
+                    print("Operasi simpan dibatalkan.")
+                    
         except Exception as exception:
-            print(f"An error has occured while generating the DFS forest: {exception}")
+            print(f"Terjadi kesalahan saat menghasilkan DFS forest: {exception}")
 
-        create_topological_sorting = input("Would you also like to create a topological sorting of the currently-loaded graph data using the generated DFS forest? (y/N): ").strip().lower()
+        create_topological_sorting = input("Apakah Anda juga ingin membuat pengurutan topologis (topological sorting) dari data graf yang sedang dimuat menggunakan DFS forest yang dihasilkan? (y/N): ").strip().lower()
         
         if create_topological_sorting.startswith('y'):
             self.create_topological_sorting(discovery_times, finishing_times)
@@ -253,8 +378,8 @@ class Graph:
     def create_topological_sorting(self, discovery_times, finishing_times):
         
         """
-        Creates a topological sorting visualization based on the DFS forest finishing times.
-        Nodes are arranged left-to-right based on decreasing-ordered finishing times.
+        Membuat visualisasi topological sorting berdasarkan finishing time DFS forest.
+        Node diurutkan dari kiri ke kanan berdasarkan finishing time yang menurun.
         """
         
         sorted_nodes = sorted(
@@ -264,73 +389,80 @@ class Graph:
         )
         
         dot = graphviz.Digraph(comment='Topological Sorting', format='png')
+        
         dot.attr(rank='same', rankdir='LR')
+        
         dot.attr('node', shape='circle', color='orange', penwidth='3', 
             style='filled', fontname='Arial', fontweight='bold', 
             fillcolor='lightblue'
         )
-
+        
         for node in sorted_nodes:
             if node in finishing_times:
                 label = f"{node}\n{discovery_times[node]}/{finishing_times[node]}"
                 dot.node(node, label)
-                
+                  
         for node in sorted_nodes:
             for neighbor in self.adjacency_list[node]:
                 dot.edge(node, neighbor)
-             
+                
         with dot.subgraph() as subgraph:
             subgraph.attr(rank='same')
             for index in range(len(sorted_nodes) - 1):
                 if sorted_nodes[index] in finishing_times and sorted_nodes[index + 1] in finishing_times:
                     subgraph.edge(sorted_nodes[index], sorted_nodes[index + 1], style='invis')
-        
+                    
         try:
             dot.view(cleanup=True)
-            print("\nThe topological sorting has been successfully generated and opened in your default image viewer.")
-            print("Nodes are arranged from left-to-right based on decreasing finishing times.")
-            save_option = input("Would you also like to save the topological sorting visualization into an actual file? (y/N): ").strip().lower()
+            
+            print("\nTopological sorting berhasil dibuat dan dibuka di image viewer default Anda.")
+            print("Node diurutkan dari kiri ke kanan berdasarkan finishing time yang menurun.")
+            
+            save_option = input("Apakah Anda juga ingin menyimpan visualisasi topological sorting ke dalam file? (y/N): ").strip().lower()
+            
             if save_option.startswith('y'):
-                root = tk.Tk()
+                root = tkinter.Tk()
                 root.withdraw()
                 file_path = filedialog.asksaveasfilename(
                     defaultextension='png',
                     filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
-                    title = "Save Topological Sorting Visualization As A PNG File"
+                    title = "Simpan Visualisasi Topological Sorting Sebagai PNG"
                 )
                 if file_path:
                     dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
-                    print(f"Topological sorting visualization has been successfully saved into '{file_path}'")
+                    print(f"Visualisasi topological sorting telah berhasil disimpan ke dalam '{file_path}'")
                 else:
-                    print("Save operation successfully cancelled.")
+                    print("Operasi simpan dibatalkan.")
+                    
         except Exception as exception:
-            print(f"An error has occured while generating the topological sorting: {exception}")
-
+            print(f"Terjadi kesalahan saat menghasilkan topological sorting: {exception}")
+            
     def generate_bfs_tree(self, start_node=None):
+        
         """
-        Performs Breadth-First Search (BFS) traversal starting from the specified node
-        and generates a BFS tree visualization. Each node in the visualization will have
-        a number above it representing the shortest path length (in edges) from the start node.
+        Melakukan Breadth-First Search (BFS) mulai dari node yang ditentukan
+        dan menghasilkan visualisasi BFS tree. Setiap node pada visualisasi akan memiliki
+        angka di atasnya yang merepresentasikan jarak terpendek (jumlah edge) dari node awal.
         """
+        
         if not self.adjacency_list:
-            print("The current graph is empty. Cannot perform BFS traversal.")
+            print("Graf saat ini kosong. Tidak dapat melakukan BFS traversal.")
             return
 
         if start_node not in self.adjacency_list:
-            print(f"Error: Start node '{start_node}' does not exist in the currently-loaded graph data.")
+            print(f"Error: Node awal '{start_node}' tidak ada di konfigurasi data graf yang sedang dimuat.")
             return
-
+        
         distance = {node: None for node in self.adjacency_list}
         parent = {node: None for node in self.adjacency_list}
         visited = {node: False for node in self.adjacency_list}
+        
         queue = deque()
-
         distance[start_node] = 0
         visited[start_node] = True
         queue.append(start_node)
-
         bfs_edges = []
-
+        
         while queue:
             current = queue.popleft()
             for neighbor in self.adjacency_list[current]:
@@ -340,7 +472,7 @@ class Graph:
                     parent[neighbor] = current
                     bfs_edges.append((current, neighbor))
                     queue.append(neighbor)
-
+                    
         dot = graphviz.Digraph(comment='BFS Tree', format='png')
         dot.attr(rankdir='TB')
         dot.attr('node', shape='circle', color='orange', penwidth='3',
@@ -354,110 +486,177 @@ class Graph:
                 dot.node(node, label)
             else:
                 dot.node(node, node, color='gray', fillcolor='white')
-
+                
         for u, v in bfs_edges:
             dot.edge(u, v)
-
+            
         try:
             dot.view(cleanup=True)
-            print(f"\nThe BFS Tree has been successfully generated and opened in your default image viewer. Starting from node '{start_node}'.")
-            print("Each node shows the shortest path length (in edges) from the start node above its name.")
-            save_option = input("Would you also like to save the BFS Tree visualization into a file? (y/N): ").strip().lower()
+            
+            print(f"\nSebuah BFS Tree telah berhasil dibuat dan dibuka di image viewer default punya komputer Anda. Mulai dari node '{start_node}'.")
+            print("Setiap node menunjukkan panjang jalur terpendek (dalam edge) dari node awal di atas namanya.")
+            
+            save_option = input("Apakah Anda juga ingin menyimpan visualisasi BFS Tree ke dalam file? (y/N): ").strip().lower()
+            
             if save_option.startswith('y'):
-                root = tk.Tk()
+                root = tkinter.Tk()
                 root.withdraw()
                 file_path = filedialog.asksaveasfilename(
                     defaultextension=".png",
                     filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
-                    title="Save BFS Tree Visualization As PNG"
+                    title="Simpan Visualisasi BFS Tree Sebagai File Gambar Berformat PNG"
                 )
                 if file_path:
                     dot.render(file_path.rsplit('.', 1)[0], format='png', cleanup=True)
-                    print(f"BFS tree visualization has been successfully saved into '{file_path}'")
+                    print(f"Visualisasi BFS Tree telah berhasil disimpan ke dalam '{file_path}'")
                 else:
-                    print("Save operation successfully cancelled.")
+                    print("Operasi simpan dibatalkan.")
+                    
         except Exception as exception:
-            print(f"An error has occured while generating the BFS tree: {exception}")
+            print(f"Terjadi kesalahan saat menghasilkan Pohon BFS atau BFS Tree: {exception}")
 
 def print_menu_options():
-    """Prints the interactive menu options for the program's user."""
-    print("\n========== Graph Operations Menu ==========")
-    print("1. Add A New Node ➕")
-    print("2. Add A New Edge ➡️")
-    print("3. Display The Current Representation Of The Graph 🖼️")
-    print("4. Perform Depth-First Search (DFS) Traversal and Create A DFS Forest 🌲")
-    print("5. Perform Breadth-First Search (BFS) Traversal and Create A BFS Tree 🌳")
-    print("6. Save The Current Graph Data To A GraphViz .DOT File 💾")
-    print("7. Load Graph Data From A GraphViz .DOT File 📂")
-    print("8. Fully Exit & Terminate The Whole Program ❌")
-    print("============================================\n")
+    
+    """
+    Menampilkan menu interaktif untuk para pengguna program.
+    """
+    
+    print("\n========== Menu Operasi Graf Untuk Program Nomor 1 ===========================")
+    print("1. Tambah Node Baru ➕")
+    print("2. Tambah Edge Baru ➡️")
+    print("3. Tampilkan Representasi Dari Konfigurasi Data Graf Yang Termuat Saat Ini 🖼️")
+    print("4. Lakukan Traversal Depth-First Search (DFS) dan Buat DFS Forest 🌲")
+    print("5. Lakukan Traversal Breadth-First Search (BFS) dan Buat BFS Tree 🌳")
+    print("6. Simpan Konfigurasi Data Graf Yang Termuat Saat Ini Ke Dalam File GraphViz .DOT 💾")
+    print("7. Muatkan Konfigurasi Data Graf Dari File GraphViz .DOT 📂")
+    print("8. Tampilkan Representasi ADJACENCY LIST Dari Konfigurasi Data Graf Yang Termuat Saat Ini 📜")
+    print("9. Keluar dan Hentikan Program ❌")
+    print("==============================================================================\n")
 
 
 def main():
+    
     graph = Graph()
-    print("Welcome to the Graph Operations Program! 🌐")
+    
+    print("")
+    
+    print("Selamat datang di Program Operasi Graf Untuk Nomor 1! 🌐")
+    
+    loadOnStartup = input("Apakah Anda ingin memuat konfigurasi data graf yang sudah ada dari file GraphViz .DOT? (y/N): ").strip().lower()
+    
+    if loadOnStartup.startswith('y'):
+        graph.load_graph_from_dot_file()
+        
     programIsRunning = True
+    
     while programIsRunning:
+        
         print_menu_options()
-        choice = input("Please enter your choice (1-8): ")
+        
+        choice = input("Silakan masukkan pilihan Anda (1-8): ")
         
         if choice == '1':
-            node_name = input("Enter the name of the new node to be added into the current graph: ").strip()
+            
+            node_name = input("Masukkan nama node baru yang akan ditambahkan ke graf saat ini: ").strip()
+            
             if node_name:
                 graph.add_node(node_name)
+                
             else:
-                print("The name of the new node CANNOT be empty. Please try again.")
+                print("Nama node baru TIDAK BOLEH kosong. Silakan coba lagi.")
+                
         elif choice == '2':
+            
             if not graph.adjacency_list:
-                print("The current graph is still empty. Please add new nodes first before adding edges.")
+                print("Graf saat ini masih kosong. Silakan tambahkan node baru terlebih dahulu sebelum menambahkan edge.")
                 continue
-            from_node = input("Enter the name of the already-existing origin node for the directed edge: ").strip()
-            to_node = input("Enter the name of the already-existing destination node for the directed edge: ").strip()
+            
+            from_node = input("Masukkan nama node asal yang sudah ada untuk edge terarah: ").strip()
+            to_node = input("Masukkan nama node tujuan yang sudah ada untuk edge terarah: ").strip()
+            
             if from_node and to_node:
                 graph.add_edge(from_node, to_node)
+                
             else:
-                print("The names of the origin and the destination nodes CANNOT be empty. Please try again.")
+                print("Nama node asal dan tujuan TIDAK BOLEH kosong. Silakan coba lagi.")
+                
         elif choice == '3':
+            
             if not graph.adjacency_list:
-                print("The current graph is still empty. Please add new nodes and edges into the graph first before even trying to display the graph.")
+                print("Graf saat ini masih kosong. Silakan tambahkan node baru dan edge ke dalam graf terlebih dahulu sebelum mencoba menampilkan graf.")
                 continue
-            save_option = input("Would you like to save the visualization of the currently-loaded graph data into a file? (y/N): ").strip().lower()
+            
+            save_option = input("Apakah Anda ingin menyimpan visualisasi data graf yang sedang dimuat ke dalam file gambar berformat PNG? (y/N): ").strip().lower()
+            
             graph.display_graph(save_to_file=save_option.startswith('y'))
+            
         elif choice == '4':
+            
             if not graph.adjacency_list:
-                print("The current graph is still empty. Please add new nodes and edges into the graph first before performing DFS traversal.")
+                print("Graf saat ini masih kosong. Silakan tambahkan node baru dan edge ke dalam graf terlebih dahulu sebelum melakukan traversal DFS.")
                 continue
+            
             graph.print_adjacency_list()
-            dfs_starting_node = input("Enter the name of the starting node for DFS traversal: ").strip()
+            
+            dfs_starting_node = input("Masukkan nama node awal untuk traversal DFS: ").strip()
+            
             if not dfs_starting_node:
-                print("The name of the starting node for DFS traversal CANNOT be empty. Please try again.")
+                print("Nama node awal untuk traversal DFS TIDAK BOLEH kosong. Silakan coba lagi.")
                 continue
+            
             else:
                 graph.generate_dfs_forest(dfs_starting_node)
+                
         elif choice == '5':
+            
             if not graph.adjacency_list:
-                print("The current graph is still empty. Please add new nodes and edges into the graph first before performing BFS traversal.")
+                print("Graf saat ini masih kosong. Silakan tambahkan node baru dan edge ke dalam graf terlebih dahulu sebelum melakukan traversal BFS.")
                 continue
+            
             graph.print_adjacency_list()
-            bfs_starting_node = input("Enter the name of the starting node for BFS traversal: ").strip()
+            
+            bfs_starting_node = input("Masukkan nama node awal untuk traversal BFS: ").strip()
+            
             if not bfs_starting_node:
-                print("The name of the starting node for BFS traversal CANNOT be empty. Please try again.")
+                print("Nama node awal untuk traversal BFS TIDAK BOLEH kosong. Silakan coba lagi.")
                 continue
+            
             else:
                 graph.generate_bfs_tree(bfs_starting_node)
+                
         elif choice == '6':
+            
             graph.save_graph_to_dot_file()
+            
         elif choice == '7':
+            
             graph.load_graph_from_dot_file()
+            
         elif choice == '8':
-            save_choice = input("Would you like to save the currently-loaded graph data configuration into a GraphViz .DOT file first before exiting? (y/N): ").strip().lower()
+            
+            if not graph.adjacency_list:
+                print("Graf saat ini masih kosong. Silakan tambahkan node baru dan edge ke dalam graf terlebih dahulu sebelum menampilkan adjacency list.")
+                continue
+            graph.print_adjacency_list()
+            
+        elif choice == '9':
+            
+            save_choice = input("Apakah Anda ingin menyimpan konfigurasi data graf yang sedang dimuat ke dalam file GraphViz .DOT terlebih dahulu sebelum keluar? (y/N): ").strip().lower()
+            
             if save_choice.startswith('y'):
                 graph.save_graph_to_dot_file()
-            print("Exiting the graph application. Goodbye! 👋")
+                
+            print("Saatnya keluar dari aplikasi graf. Sampai jumpa di sesi berikutnya! 👋")
+            
             programIsRunning = False
+            
+            print("")
+            
             break
+        
         else:
-            print("Invalid choice. Please enter a number between 1 and 8.")
+            
+            print("Pilihan tidak valid. Silakan masukkan nomor antara 1 dan 8.")
 
 if __name__ == "__main__":
     main()
