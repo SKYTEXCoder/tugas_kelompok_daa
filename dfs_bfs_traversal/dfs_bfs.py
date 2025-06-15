@@ -514,6 +514,18 @@ class Graph:
                     
         except Exception as exception:
             print(f"Terjadi kesalahan saat menghasilkan Pohon BFS atau BFS Tree: {exception}")
+            
+    def clear_graph_data_configuration(self):
+        """
+        Menghapus semua data graf yang tersimpan di adjacency list dan mengatur ulang grafnya dari awal.
+        Fungsi ini akan mengosongkan adjacency list dan mencetak pesan konfirmasi kepada pengguna program. 
+        """
+        if not self.adjacency_list:
+            print("Graf saat ini sudah kosong. Tidak ada data yang perlu dihapus.")
+        else:
+            self.adjacency_list.clear()
+            print("Semua konfigurasi data graf yang sedang termuat saat ini sudah berhasil dihapus dari program ini. Graf telah diatur ulang dari awal.")
+        
 
 def print_menu_options():
     
@@ -523,14 +535,15 @@ def print_menu_options():
     
     print("\n========== Menu Operasi Graf Untuk Program Nomor 1 ===========================")
     print("1. Tambah Node Baru ➕")
-    print("2. Tambah Edge Baru ➡️")
+    print("2. Tambah DIRECTED EDGE Baru ➡️")
     print("3. Tampilkan Representasi Dari Konfigurasi Data Graf Yang Termuat Saat Ini 🖼️")
     print("4. Lakukan Traversal Depth-First Search (DFS) dan Buat DFS Forest 🌲")
     print("5. Lakukan Traversal Breadth-First Search (BFS) dan Buat BFS Tree 🌳")
-    print("6. Simpan Konfigurasi Data Graf Yang Termuat Saat Ini Ke Dalam File GraphViz .DOT 💾")
-    print("7. Muatkan Konfigurasi Data Graf Dari File GraphViz .DOT 📂")
+    print("6. Simpan (SAVE) Konfigurasi Data Graf Yang Termuat Saat Ini Ke Dalam File GraphViz .DOT 💾")
+    print("7. Muatkan (LOAD) Konfigurasi Data Graf Dari File GraphViz .DOT 📂")
     print("8. Tampilkan Representasi ADJACENCY LIST Dari Konfigurasi Data Graf Yang Termuat Saat Ini 📜")
-    print("9. Keluar dan Hentikan Program ❌")
+    print("9. Clear Konfigurasi Data Graf Yang Sedang Termuat Saat Ini 🔄")
+    print("10. Keluar Dari Sini dan Hentikan Program ❌")
     print("==============================================================================\n")
 
 
@@ -553,7 +566,7 @@ def main():
         
         print_menu_options()
         
-        choice = input("Silakan masukkan pilihan Anda (1-8): ")
+        choice = input("Silakan masukkan pilihan Anda (1-10): ")
         
         if choice == '1':
             
@@ -637,9 +650,14 @@ def main():
             if not graph.adjacency_list:
                 print("Graf saat ini masih kosong. Silakan tambahkan node baru dan edge ke dalam graf terlebih dahulu sebelum menampilkan adjacency list.")
                 continue
+            
             graph.print_adjacency_list()
             
         elif choice == '9':
+            
+            graph.clear_graph_data_configuration()
+            
+        elif choice == '10':
             
             save_choice = input("Apakah Anda ingin menyimpan konfigurasi data graf yang sedang dimuat ke dalam file GraphViz .DOT terlebih dahulu sebelum keluar? (y/N): ").strip().lower()
             
