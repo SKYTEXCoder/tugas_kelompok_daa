@@ -41,7 +41,7 @@ class MyGraph:
         # Index untuk sorted edges
         i = 0
 
-        # Index untuk iterasi  node mst
+        # Index untuk iterasi node mst
         e = 0
 
         # Urutkan sisi sesuai weight dari yang paling kecil
@@ -89,6 +89,7 @@ def draw_graph_with_mst(all_edges, mst_edges, filename='graph_with_mst'):
             dot.edge(str(u), str(v), label=str(w))
 
     dot.render(filename=filename, format='png', cleanup=True)
+    print(f'\nGraph saved as {filename}.png')
 
 if __name__ == '__main__': 
     while True:
