@@ -1,4 +1,4 @@
-import re, heapq, graphviz, tkinter
+import re, graphviz, tkinter
 from tkinter import filedialog
 
 class Graph:
@@ -70,8 +70,6 @@ class Graph:
         self.adjacency_list[v].append((u, weight))
         print(f"Edge dari '{u}' ke '{v}' dan dari '{v}' ke '{u}' dengan bobot yang sebesar {weight} telah berhasil ditambahkan ke dalam konfigurasi data graf yang termuat saat ini.")
         return True
-        
-        
         
     def display_graph(self, save_to_file=False):
         
@@ -181,7 +179,6 @@ class Graph:
         except Exception as e:
             print(f"Terjadi kesalahan saat memuat graf dari file: {e}")
         
-
     def print_adjacency_list(self):
         """
         Menampilkan adjacency list dari konfigurasi data graf yang termuat saat ini.
@@ -201,71 +198,6 @@ class Graph:
                 print(f"{node}: TIDAK ADA EDGE ATAU KONEKSI")
         print("")
         
-    def prims_algorithm_mst(self, starting_node=None):
-        """
-        Implementasi algoritma Prim untuk membuat Minimum Spanning Tree (MST).
-        Hasil MST akan ditampilkan menggunakan GraphViz, dan pengguna akan diberi opsi untuk menyimpan gambar ke file PNG.
-        :param starting_node: Node awal untuk memulai algoritma Prim.
-        """
-        if not self.adjacency_list:
-            print("Graf saat ini kosong. Tidak dapat melakukan algoritma Prim.")
-            return
-
-        if starting_node not in self.adjacency_list:
-            print(f"Node '{starting_node}' tidak ada di dalam graf. Silakan pilih node yang valid.")
-            return
-
-        visited = set()
-        mst_edges = []
-        priority_queue = []
-        total_weight = 0
-
-        for neighbor, weight in self.adjacency_list[starting_node]:
-            heapq.heappush(priority_queue, (weight, starting_node, neighbor))
-
-        visited.add(starting_node)
-
-        while priority_queue:
-            weight, u, v = heapq.heappop(priority_queue)
-
-            if v not in visited:
-                visited.add(v)
-                mst_edges.append((u, v, weight))
-
-                for neighbor, edge_weight in self.adjacency_list[v]:
-                    if neighbor not in visited:
-                        heapq.heappush(priority_queue, (edge_weight, v, neighbor))
-
-        dot = graphviz.Graph(comment="Minimum Spanning Tree (MST) - Prim's Algorithm", format='png')
-        dot.attr(rankdir='LR')
-        dot.attr('node', shape='ellipse', color='green', penwidth='3', style='solid', fontname='Arial', fontweight='bold')
-
-        for u, v, weight in mst_edges:
-            dot.edge(u, v, label=str(weight), color='blue', penwidth='2')
-            total_weight += weight
-            
-        dot.attr(label=f"Total Bobot: {total_weight}", labelloc='b', fontsize='14', fontname='Arial', fontcolor='black')
-
-        try:
-            dot.view(cleanup=True)
-            print("Hasil Minimum Spanning Tree (MST) hasil Algoritma Prim berhasil ditampilkan.")
-            print(f"Total bobot dari semua koneksi atau edge yang terkandung di MST: {total_weight}")
-
-            save_option = input("Apakah Anda ingin menyimpan hasil MST ke file gambar berformat PNG? (y/N): ").strip().lower()
-            if save_option.startswith('y'):
-                root = tkinter.Tk()
-                root.withdraw()
-                file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("All files", "*.*")])
-
-                if file_path:
-                    dot.render(file_path.rsplit('.', 1)[0], view=False, format='png', cleanup=True)
-                    print(f"Hasil MST berhasil disimpan di '{file_path}'")
-                else:
-                    print("Operasi penyimpanan hasil MST dibatalkan.")
-                    
-        except Exception as exception:
-            print(f"Terjadi kesalahan saat mencoba menampilkan atau menyimpan hasil MST: {exception}")
-            
     def clear_graph_data_configuration(self):
         """
         Menghapus semua data graf yang tersimpan di adjacency list dan mengatur ulang grafnya dari awal.
@@ -276,19 +208,119 @@ class Graph:
         else:
             self.adjacency_list.clear()
             print("Semua konfigurasi data graf yang sedang termuat saat ini sudah berhasil dihapus dari program ini. Graf telah diatur ulang dari awal.")
-        
-        
+            
+    def kruskals_algorithm_mst(self):
+        """
+        Mencari Minimum Spanning Tree (MST) menggunakan Algoritma Kruskal pada konfigurasi data graf undirected/weighted yang sedang termuat di dalam program saat ini.
+        Hasil MST akan langsung divisualisasikan menggunakan library GraphViz dan pengguna program akan diberi opsi untuk menyimpan gambar MST.
+        """
+        if not self.adjacency_list or len(self.adjacency_list) < 2:
+            print("Konfigurasi data graf saat ini isinya masih kosong atau masih terlalu sedikit node untuk membentuk sebuah MST.")
+            return
 
+        # collect semua sisi-sisi yang "unik" (karena graf ini undirected dan kita menggunakan adjacency list di atas)
+        edges = []
+        seen = set()
+        for u in self.adjacency_list:
+            for v, w in self.adjacency_list[u]:
+                if (v, u) not in seen:
+                    edges.append((w, u, v))
+                    seen.add((u, v))
+
+        # urutkan sisi-sisi (edges) berdasarkan besar bobotnya. Fungsi sort di sini sudah mengsort list edges di atas ke dalam urutab menaik (ascending)
+        edges.sort()
+
+        # inisialisasi struktur data disjoint-set (union-find)
+        parent = {}
+        rank = {}
+
+        # definisi fungsi find(node)
+        def find(node):
+            while parent[node] != node:
+                parent[node] = parent[parent[node]]
+                node = parent[node]
+            return node
+
+        # definisi fungsi union(u, v)
+        def union(u, v):
+            root_u = find(u)
+            root_v = find(v)
+            if root_u == root_v:
+                return False
+            if rank[root_u] < rank[root_v]:
+                parent[root_u] = root_v
+            else:
+                parent[root_v] = root_u
+                if rank[root_u] == rank[root_v]:
+                    rank[root_u] += 1
+            return True
+
+        # Pertama-tama, setiap node akan menjadi parent dirinya sendiri
+        for node in self.adjacency_list:
+            parent[node] = node
+            rank[node] = 0
+
+        # Step 5: Proses edge satu per satu, tambahkan ke MST jika tidak membentuk siklus
+        mst_edges = []
+        total_weight = 0
+        for w, u, v in edges:
+            if union(u, v):
+                mst_edges.append((u, v, w))
+                total_weight += w
+            if len(mst_edges) == len(self.adjacency_list) - 1:
+                break
+
+        if len(mst_edges) != len(self.adjacency_list) - 1:
+            print("Graf tidak terhubung, MST tidak dapat dibentuk dari semua node.")
+            return
+
+        # gambar MST menggunakan library GraphViz
+        dot = graphviz.Graph(comment="Minimum Spanning Tree (MST) - Kruskal's Algorithm", format='png')
+        dot.attr(rankdir='LR')
+        dot.attr('node', shape='ellipse', color='green', penwidth='3', style='solid', fontname='Arial', fontweight='bold')
+        dot.attr(label=f"Total Bobot: {total_weight}", labelloc='b', fontsize='14', fontname='Arial', fontcolor='black')
+
+        # tambahkan node-node nya
+        for node in self.adjacency_list:
+            dot.node(node)
+
+        # selanjutnya, tambahkan sisi-sisi mst
+        for u, v, w in mst_edges:
+            dot.edge(u, v, label=str(w), color='blue', penwidth='2')
+            
+        # langsung tampilkan gambar mstnya menggunakan library graphviz
+        try:
+            dot.view(cleanup=True)
+            print("Minimum Spanning Tree (MST) hasil Algoritma Kruskal berhasil divisualisasikan.")
+            print(f"Total bobot dari semua koneksi atau edge yang terkandung di MST: {total_weight}")
+
+            # tanya pengguna program apakah dia mau menyimpan gambar hasil MST-nya ke file gambar berformat PNG atau ngga
+            save_option = input("Apakah Anda ingin menyimpan hasil MST ke file gambar PNG? (y/N): ").strip().lower()
+            if save_option.startswith('y'):
+                root = tkinter.Tk()
+                root.withdraw()
+                file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("All files", "*.*")])
+                
+                if file_path:
+                    dot.render(file_path.rsplit('.', 1)[0], view=False, format='png', cleanup=True)
+                    print(f"Hasil MST berhasil disimpan di '{file_path}'")
+                    
+                else:
+                    print("Operasi penyimpanan hasil MST dibatalkan.")
+                    
+        except Exception as exception:
+            print(f"Terjadi kesalahan saat menampilkan atau menyimpan hasil MST: {exception}")
+        
 
 def print_menu_options():
     """
-    Menampilkan menu interaktif untuk para pengguna program Nomor 2 (Algoritma Prim).
+    Menampilkan menu interaktif untuk para pengguna program Nomor 2 (Algoritma Kruskal).
     """
-    print("\n========== Menu Operasi Graf Untuk Program Nomor 2 (Algoritma Prim) ===========================")
+    print("\n========== Menu Operasi Graf Untuk Program Nomor 2 (Algoritma Kruskal) ===========================")
     print("1. Tambahkan Node Baru ➕")
     print("2. Tambahkan UNDIRECTED EDGE Baru ⬅️➡️")
     print("3. Tampilkan Representasi File Gambar Berformat PNG Dari Konfigurasi Data Graf Yang Termuat Saat Ini 🖼️")
-    print("4. Lakukan Algoritma Prim Untuk Membuat Minimum-Spanning Tree (MST)-nya 🌲")
+    print("4. Lakukan Algoritma Kruskal (Kruskal's Algorithm) Untuk Membuat Minimum-Spanning Tree (MST)-nya 🌲")
     print("5. Simpan (SAVE) Konfigurasi Data Graf Yang Termuat Saat Ini Ke Dalam File GraphViz .DOT 💾")
     print("6. Muatkan (LOAD) Konfigurasi Data Graf Dari File GraphViz .DOT Yang Sudah Ada 📂")
     print("7. Tampilkan Representasi ADJACENCY LIST Dari Konfigurasi Data Graf Yang Termuat Saat Ini 📜")
@@ -296,12 +328,10 @@ def print_menu_options():
     print("9. Keluar Dari Sini dan Hentikan Program ❌")
     print("==============================================================================\n")
     
-    
-    
 def main():
     graph = Graph()
     print("")
-    print("Selamat datang di Program Operasi Graf Untuk Nomor 2 (Algoritma Prim)! 🌐")
+    print("Selamat datang di Program Operasi Graf Untuk Nomor 2 (Algoritma Kruskal)! 🌐")
     loadOnStartup = input("Apakah Anda ingin memuat konfigurasi data graf yang sudah ada dari file GraphViz .DOT? (y/N): ").strip().lower()
     if loadOnStartup.startswith('y'):
         graph.load_graph_from_dot_file()
@@ -336,16 +366,7 @@ def main():
             graph.display_graph(save_to_file=save_option.startswith('y'))
             
         elif choice == '4':
-            if not graph.adjacency_list:
-                print("Konfigurasi data graf yang termuat saat ini masih kosong. Silakan tambahkan node-node baru dan edge-edge baru ke dalam graf terlebih dahulu sebelum melakukan algoritma Prim untuk dicari MST-nya.")
-                continue
-            graph.print_adjacency_list()
-            prims_starting_node = str(input("Masukkan nama node awal untuk membuat MST dari algoritma Prim: ").strip())
-            if not prims_starting_node:
-                print("Nama node awal untuk melakukan algoritma Prim TIDAK BOLEH kosong. Silakan coba lagi.")
-                continue
-            else:
-                graph.prims_algorithm_mst(prims_starting_node)
+            graph.kruskals_algorithm_mst()
                                 
         elif choice == '5':
             graph.save_graph_to_dot_file()
