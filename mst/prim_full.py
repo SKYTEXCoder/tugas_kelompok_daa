@@ -289,7 +289,7 @@ def print_menu_options():
     print("3. Tampilkan Representasi File Gambar Berformat PNG Dari Konfigurasi Data Graf Yang Termuat Saat Ini 🖼️")
     print("4. Lakukan Algoritma Prim Untuk Membuat Minimum-Spanning Tree (MST)-nya 🌲")
     print("5. Simpan (SAVE) Konfigurasi Data Graf Yang Termuat Saat Ini Ke Dalam File GraphViz .DOT 💾")
-    print("6. Muatkan (LOAD) Konfigurasi Data Graf Dari File GraphViz .DOT 📂")
+    print("6. Muatkan (LOAD) Konfigurasi Data Graf Dari File GraphViz .DOT Yang Sudah Ada 📂")
     print("7. Tampilkan Representasi ADJACENCY LIST Dari Konfigurasi Data Graf Yang Termuat Saat Ini 📜")
     print("8. CLEAR atau BERSIHKAN Konfigurasi Data Graf Yang Sedang Termuat Saat Ini 🔄")
     print("9. Keluar Dari Sini dan Hentikan Program ❌")
