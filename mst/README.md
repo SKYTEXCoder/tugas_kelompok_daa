@@ -2,4 +2,4 @@
 
 ## Cara penggunaan
 1. ```source myenv/bin/activate```
-2. ```python kruskal.py```
+2. ```python kruskal.py``` or ```python prim.py```
