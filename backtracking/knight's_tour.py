@@ -1,4 +1,4 @@
-import sys
+import sys, random
 
 # Penjelasan:
 # Mendefinisikan ukuran papan catur (6x6) dan pergerakan kuda yang dimodifikasi.
@@ -7,10 +7,20 @@ import sys
 BOARD_SIZE = 6
 
 # Custom knight moves: (±3, ±2) and (±2, ±3)
+
 MOVES = [
     (3, 2), (3, -2), (-3, 2), (-3, -2),
     (2, 3), (2, -3), (-2, 3), (-2, -3)
 ]
+
+
+# Official knight moves: (±2, ±1) and (±1, ±2)
+"""
+MOVES = [
+    (2, 1), (2, -1), (-2, 1), (-2, -1),
+    (1, 2), (1, -2), (-1, 2), (-1, -2)
+]
+"""
 
 # Penjelasan:
 # Fungsi untuk mengecek apakah posisi (x, y) valid dan belum pernah dikunjungi.
@@ -34,9 +44,12 @@ def knight_tour(x, y, move_num, board, path, all_tours, tree_size, max_tours=4):
         board[x][y] = -1
         path.pop()
         return
+    
+    moves = MOVES[:]
+    random.shuffle(moves)
 
     # Coba semua kemungkinan langkah kuda.
-    for dx, dy in MOVES:
+    for dx, dy in moves:
         nx, ny = x + dx, y + dy
         if is_valid(nx, ny, board):
             knight_tour(nx, ny, move_num + 1, board, path, all_tours, tree_size, max_tours)
@@ -57,7 +70,8 @@ def knight_tour(x, y, move_num, board, path, all_tours, tree_size, max_tours=4):
 def print_tour(tour):
     print("Barisan penjelajahan (urutan langkah):")
     for idx, (x, y) in enumerate(tour):
-        print(f"m{idx+1}: ({x},{y})", end='; ')
+        print(f"m{idx+1}: ({x}, {y})", end='; ')
+        print("")
     print("\n")
 
 # Penjelasan:
@@ -73,19 +87,22 @@ def main():
 
     # Mulai dari empat sudut papan.
     start_positions = [(0,0), (0,BOARD_SIZE-1), (BOARD_SIZE-1,0), (BOARD_SIZE-1,BOARD_SIZE-1)]
-    for sx, sy in start_positions:
+    randomized_start_positions = start_positions[:]
+    random.shuffle(randomized_start_positions)
+    for sx, sy in randomized_start_positions:
         if len(all_tours) >= 4:
             break
-        print(f"Mencoba dari posisi awal: ({sx},{sy})")
+        print(f"Mencoba dari posisi awal: ({sx}, {sy}).")
         knight_tour(sx, sy, 0, board, path, all_tours, tree_size, max_tours=4)
 
     # Jika solusi kurang dari 4, coba posisi lain.
     if len(all_tours) < 4:
         for sx in range(BOARD_SIZE):
             for sy in range(BOARD_SIZE):
-                if (sx, sy) not in start_positions:
+                if (sx, sy) not in randomized_start_positions:
                     if len(all_tours) >= 4:
                         break
+                    print(f"Mencoba dari posisi awal: ({sx}, {sy}).")
                     knight_tour(sx, sy, 0, board, path, all_tours, tree_size, max_tours=4)
 
     # Tampilkan semua penjelajahan yang ditemukan.
