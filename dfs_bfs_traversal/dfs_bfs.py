@@ -222,7 +222,7 @@ class Graph:
             print("\nRepresentasi Adjacency List dari file GraphViz .DOT yang dipilih: " + "KOSONG" if not temporary_adjacency_list else "")
 
             for node, edges in temporary_adjacency_list.items():
-                print(f"{node}: {','.join(edges) if edges else 'TIDAK ADA EDGE/ KONEKSI'}")
+                print(f"{node}: {', '.join(edges) if edges else 'TIDAK ADA EDGE/ KONEKSI'}")
                 
             print("")
             
