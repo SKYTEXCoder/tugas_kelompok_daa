@@ -1,0 +1,21 @@
+graph G {
+  rankdir=LR;
+  node [shape=ellipse, color=orange, style=solid, fontname=Arial, fontweight=bold];
+  "a" -- "c" [label="4"];
+  "a" -- "i" [label="14"];
+  "b" -- "e" [label="7"];
+  "b" -- "f" [label="3"];
+  "c" -- "d" [label="20"];
+  "c" -- "j" [label="4"];
+  "d" -- "e" [label="7"];
+  "d" -- "k" [label="11"];
+  "d" -- "g" [label="15"];
+  "e" -- "g" [label="7"];
+  "e" -- "f" [label="5"];
+  "f" -- "g" [label="4"];
+  "g" -- "h" [label="11"];
+  "h" -- "i" [label="12"];
+  "h" -- "k" [label="8"];
+  "i" -- "j" [label="7"];
+  "j" -- "k" [label="9"];
+}
