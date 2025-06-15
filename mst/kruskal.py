@@ -72,7 +72,7 @@ class MyGraph:
             # Jika sama jangan lakukan apapun karena jika dilakukan akan membuat cycle
 
         minimumCost = 0
-        print("Sisi pada MST") 
+        print("\nSisi pada MST") 
         for u, v, weight in result: 
             minimumCost += weight 
             print("%d -- %d == %d" % (u, v, weight)) 
@@ -91,27 +91,30 @@ def draw_graph_with_mst(all_edges, mst_edges, filename='graph_with_mst'):
     dot.render(filename=filename, format='png', cleanup=True)
 
 if __name__ == '__main__': 
-    # g = Graph(4) 
-    # g.addEdge(0, 1, 10)  
-    # g.addEdge(0, 2, 6) 
-    # g.addEdge(0, 3, 2) 
-    # g.addEdge(1, 3, 1) 
-    # g.addEdge(2, 3, 4) 
+    while True:
+        try:
+            v = int(input('Masukkan jumlah node: '))
+            if v >= 2:
+                break;
+            else:
+                print('Jumlah node minimal 2!\n')
+        except:
+            print('Masukkan integer!\n')
 
-    g = MyGraph(6)
-    g.addEdge(0, 1, 1)
-    g.addEdge(0, 2, 3)
-    g.addEdge(1, 2, 6)
-    g.addEdge(1, 4, 8)
-    g.addEdge(1, 3, 7)
-    g.addEdge(2, 4, 5)
-    g.addEdge(2, 3, 2)
-    g.addEdge(3, 5, 13)
-    g.addEdge(3, 4, 9)
-    g.addEdge(4, 5, 5)
+    g = MyGraph(v)
+    print('\nMasukkan sisi, node pertama dimulai dari 0.\nPastikan node pada edge yang diinput tidak melebihi jumlah node yang sudah diinput.\nFormat input (node1 node2 weight)\nKetik \'done\' jika sudah\n',)
+    while True:
+        e = input('Masukkan edge: ')
+        if e.lower() == 'done':
+            break
+        try:
+            u, v, w = map(int, e.strip().split())
+            g.addEdge(u, v, w)
+        except:
+            print('Format salah')
 
     # Lakukan algoritma 
     mst = g.KruskalMST()
     
     # Gambar graph
-    draw_graph_with_mst(g.graph, mst, filename='mst')
+    draw_graph_with_mst(g.graph, mst, filename='kruskal_mst')
