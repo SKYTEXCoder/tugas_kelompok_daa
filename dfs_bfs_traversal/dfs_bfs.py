@@ -77,12 +77,44 @@ class Graph:
         :param save_to_file: Jika True, graf akan disimpan ke file PNG.
         """
         
+        dot = graphviz.Digraph(comment='Graph Visualization', format='png', engine='neato')
+        dot.graph_attr['splines'] = 'true'
+        dot.graph_attr['overlap'] = 'scale'
+        
+        dot.attr('node', shape='circle', color='orange', penwidth='3', style='filled', fillcolor='lightblue', fontname='Arial', fontweight='bold')
+        dot.attr('edge', color='black', penwidth='2')
+        
+        node_style = {
+            'shape': 'circle',
+            'color': 'orange',
+            'style': 'filled',
+            'fillcolor': 'lightblue',
+            'penwidth': '3',
+            'fontname': 'Arial',
+            'fontweight': 'bold'
+        }
+        
+        positions = {
+            'a': '0,0!',
+            'b': '-3,0!',
+            'c': '-7,-3!',
+            'd': '-3,-3!',
+            'e': '0,-3!',
+            'f': '-1.5,-5!',
+            'g': '-5,-5!',
+            'h': '-9,-5!',
+            'i': '-7,-7!',
+            'j': '-3,-7!',
+        }
+        
+        """
         dot = graphviz.Digraph(comment='Graph Visualization', format='png')
         dot.attr(rankdir='LR')
         dot.attr('node', shape='ellipse', color='orange', penwidth='3', style='solid', fontname='Arial', fontweight='bold')
+        """
         
         for node, edges in self.adjacency_list.items():
-            dot.node(node)
+            dot.node(node, pos=positions[node])
             for edge in edges:
                 dot.edge(node, edge)
                 
@@ -326,15 +358,44 @@ class Graph:
             
         dfs_visit(start_node)
         
-        dot = graphviz.Digraph(comment='DFS Forest', format='png')
-        dot.attr(rankdir='LR')
+        for node in self.adjacency_list:
+            if node not in discovery_times and node not in finishing_times:
+                dfs_visit(node)
+        
+        dot = graphviz.Digraph(comment='DFS Forest', format='png', engine='neato')
+        dot.graph_attr['splines'] = 'true'
+        dot.graph_attr['overlap'] = 'scale'
+        ## dot.graph_attr['sep'] = '0.6'
+        
+        node_style = {
+            'shape': 'circle',
+            'color': 'orange',
+            'style': 'filled',
+            'fillcolor': 'lightblue',
+            'penwidth': '3',
+            'fontname': 'Arial',
+            'fontweight': 'bold'
+        }
+        
+        positions = {
+            'a': '0,0!',
+            'b': '-3,0!',
+            'c': '-7,-3!',
+            'd': '-3,-3!',
+            'e': '0,-3!',
+            'f': '-1.5,-5!',
+            'g': '-5,-5!',
+            'h': '-9,-5!',
+            'i': '-7,-7!',
+            'j': '-3,-7!',
+        }
         
         for node in self.adjacency_list:
-            if node in discovery_times:
+            if node in discovery_times and node in finishing_times:
                 label = f"{node}\n{discovery_times[node]}/{finishing_times[node]}"
-                dot.node(node, label, shape='circle', color='orange', style='filled', fillcolor='lightblue')
+                dot.node(node, label, pos=f'{positions[node]}', **node_style)
             else:
-                dot.node(node, node, shape='circle', color='gray')
+                dot.node(node, node, pos=f'{positions[node]}', fillcolor='lightgray', **node_style)
         
         edge_colors = {'T': 'black', 'B': 'gold', 'F': 'red', 'C': 'blue'}
         
@@ -388,35 +449,38 @@ class Graph:
             reverse=True
         )
         
-        dot = graphviz.Digraph(comment='Topological Sorting', format='png')
+        dot = graphviz.Digraph(comment='Topological Sorting Representation', format='png', engine='neato')
         
-        dot.attr(rank='same', rankdir='LR')
+        dot.graph_attr['splines'] = 'true'
+        dot.graph_attr['overlap'] = 'scale'
+        dot.graph_attr['sep'] = '1.0'
         
         dot.attr('node', shape='circle', color='orange', penwidth='3', 
             style='filled', fontname='Arial', fontweight='bold', 
             fillcolor='lightblue'
         )
         
+        positions = {}
+        spacing = 2.0
+        for i, node_name in enumerate(sorted_nodes):
+            positions[node_name] = f'{i * spacing},0!'
+
         for node in sorted_nodes:
-            if node in finishing_times:
-                label = f"{node}\n{discovery_times[node]}/{finishing_times[node]}"
+            label = f"{node}\n{discovery_times[node]}/{finishing_times[node]}"
+            if node in positions:
+                dot.node(node, label, pos=positions[node])
+            else:
                 dot.node(node, label)
-                  
+            
         for node in sorted_nodes:
             for neighbor in self.adjacency_list[node]:
                 dot.edge(node, neighbor)
                 
-        with dot.subgraph() as subgraph:
-            subgraph.attr(rank='same')
-            for index in range(len(sorted_nodes) - 1):
-                if sorted_nodes[index] in finishing_times and sorted_nodes[index + 1] in finishing_times:
-                    subgraph.edge(sorted_nodes[index], sorted_nodes[index + 1], style='invis')
-                    
         try:
             dot.view(cleanup=True)
             
             print("\nTopological sorting berhasil dibuat dan dibuka di image viewer default Anda.")
-            print("Node diurutkan dari kiri ke kanan berdasarkan finishing time yang menurun.")
+            print("Node SEHARUSNYA diurutkan dari kiri ke kanan pada satu baris berdasarkan finishing time yang menurun.")
             
             save_option = input("Apakah Anda juga ingin menyimpan visualisasi topological sorting ke dalam file? (y/N): ").strip().lower()
             
@@ -443,6 +507,7 @@ class Graph:
         Melakukan Breadth-First Search (BFS) mulai dari node yang ditentukan
         dan menghasilkan visualisasi BFS tree. Setiap node pada visualisasi akan memiliki
         angka di atasnya yang merepresentasikan jarak terpendek (jumlah edge) dari node awal.
+        Jika graf tidak terhubung, BFS akan dilakukan untuk setiap komponen terpisah.
         """
         
         if not self.adjacency_list:
@@ -456,13 +521,14 @@ class Graph:
         distance = {node: None for node in self.adjacency_list}
         parent = {node: None for node in self.adjacency_list}
         visited = {node: False for node in self.adjacency_list}
+        bfs_edges = []
         
+        """
         queue = deque()
         distance[start_node] = 0
         visited[start_node] = True
         queue.append(start_node)
         bfs_edges = []
-        
         while queue:
             current = queue.popleft()
             for neighbor in self.adjacency_list[current]:
@@ -472,6 +538,31 @@ class Graph:
                     parent[neighbor] = current
                     bfs_edges.append((current, neighbor))
                     queue.append(neighbor)
+        """
+        
+        def bfs(start):
+            queue = deque()
+            distance[start] = 0
+            visited[start] = True
+            queue.append(start)
+            while queue:
+                current = queue.popleft()
+                for neighbor in self.adjacency_list[current]:
+                    if not visited[neighbor]:
+                        visited[neighbor] = True
+                        distance[neighbor] = distance[current] + 1
+                        parent[neighbor] = current
+                        bfs_edges.append((current, neighbor))
+                        queue.append(neighbor)
+                        
+        # BFS from the given start_node
+        bfs(start_node)
+        # BFS for all other unvisited nodes (disconnected components)
+        for node in self.adjacency_list:
+            if not visited[node]:
+                bfs(node)
+                    
+        print(bfs_edges)
                     
         dot = graphviz.Digraph(comment='BFS Tree', format='png')
         dot.attr(rankdir='TB')
@@ -486,9 +577,20 @@ class Graph:
                 dot.node(node, label)
             else:
                 dot.node(node, node, color='gray', fillcolor='white')
+          
+        """      
+        for u in self.adjacency_list:
+            for v in self.adjacency_list[u]:
+                dot.edge(u, v, color="gray", style="dashed")
+        """
                 
         for u, v in bfs_edges:
-            dot.edge(u, v)
+            dot.edge(u, v, color="black", penwidth="2")
+            
+        if 'i' in self.adjacency_list:
+            for target in ['h', 'g']:
+                if target in self.adjacency_list['i']:
+                    dot.edge('i', target, color="black", penwidth="2")
             
         try:
             dot.view(cleanup=True)
