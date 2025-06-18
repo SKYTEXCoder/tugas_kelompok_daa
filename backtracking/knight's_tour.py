@@ -7,12 +7,10 @@ import sys, random
 BOARD_SIZE = 6
 
 # Custom knight moves: (±3, ±2) and (±2, ±3)
-
 MOVES = [
     (3, 2), (3, -2), (-3, 2), (-3, -2),
     (2, 3), (2, -3), (-2, 3), (-2, -3)
 ]
-
 
 # Official knight moves: (±2, ±1) and (±1, ±2)
 """
@@ -119,5 +117,5 @@ def main():
 # Set recursion limit agar program tidak berhenti karena batas rekursi Python.
 # Jalankan fungsi utama jika file dijalankan langsung.
 if __name__ == "__main__":
-    sys.setrecursionlimit(2147483647)
+    ## sys.setrecursionlimit(2147483647)
     main()
