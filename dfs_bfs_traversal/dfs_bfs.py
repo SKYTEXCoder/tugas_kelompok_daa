@@ -379,7 +379,7 @@ class Graph:
         
         """
         Membuat visualisasi topological sorting berdasarkan finishing time DFS forest.
-        Node diurutkan dari kiri ke kanan berdasarkan finishing time yang menurun.
+        Node diurutkan dari paling atas ke paling bawah berdasarkan finishing time yang menurun.
         """
         
         sorted_nodes = sorted(
