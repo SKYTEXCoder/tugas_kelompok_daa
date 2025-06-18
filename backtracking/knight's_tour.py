@@ -89,7 +89,7 @@ def print_tour_sequence(tour):
         print("")
     print("\n")
 
-# Untuk menampilkan status dari papan caturnya setelah menemukan 4 barisan penjelajahan, status di sini merupakan "ini langkah ke berapa"
+# Untuk menampilkan status dari setiap kotak di papan caturnya setelah menemukan 4 barisan penjelajahan, status di sini merupakan "kudanya menempatkan kotak ini di langkah ke berapa"
 def print_tour_chess_board(tour):
     print("Penampilan urutan-urutan langkah dalam layout papan catur atau chess board: ")
     # Buat Papan Catur Kosong dulu
@@ -98,8 +98,8 @@ def print_tour_chess_board(tour):
     for move_number, (x, y) in enumerate(tour):
         board[x][y] = move_number + 1 # + 1 supaya langkah pertamanya itu 1, bukan 0
     # print papan caturnya
-    for row in board[::-1]:
-        print(' '.join(f"{cell:2d}" for cell in row))
+    for y in range(BOARD_SIZE - 1, -1, -1):
+        print(' '.join(f"{board[x][y]:2d}" for x in range(BOARD_SIZE)))
     print("")
     
     
@@ -110,7 +110,7 @@ def print_m_sequence(possible_moves_counts):
     print(' '.join(str(m) for m in possible_moves_counts), end='')
     print("]\n")
     
-# Untuk menghitung m
+# Untuk menghitung m-m nya
 def count_possible_moves(x, y, board):
     count = 0
     for dx, dy in MOVES:
@@ -118,17 +118,26 @@ def count_possible_moves(x, y, board):
         if is_valid(nx, ny, board):
             count += 1
     return count
+
+def estimate_tree_size_from_m_sequence(m_sequence):
+    total = 1
+    prod = 1
+    for m in m_sequence:
+        prod *= m
+        total += prod
+    return total
         
 # Penjelasan:
 # Fungsi utama untuk menginisialisasi papan, mencoba penjelajahan dari beberapa posisi awal, dan menampilkan hasil.
 # Alur berpikir:
 # Mulai dari sudut-sudut papan untuk variasi solusi, lalu jika kurang dari 4 solusi, coba posisi lain.
 def main():
-    print("========== Knight's Tour Pada Papan Catur (Chess Board) 6x6 ==========")
+    print("========== Knight's Tour Pada Papan Catur (Chess Board) Berukuran 6x6 ==========")
     all_tours = []
     tree_size = [0]
     board = [[-1 for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
     path = []
+    estimated_tree_sizes = []
 
     # Mulai dari empat sudut papan.
     # (0,0), (0, 5), (5, 0), (5, 5)
@@ -160,15 +169,21 @@ def main():
     # Tampilkan semua penjelajahan yang ditemukan.
     print("")
     for i, (tour, tour_tree_size, possible_moves_counts) in enumerate(all_tours):
+        print("")
         print(f"Penjelajahan ke-{i+1}:")
         print_tour_chess_board(tour)
         print_tour_sequence(tour)
         print_m_sequence(possible_moves_counts)
-        print(f"Estimasi tree size saat barisan penjelajahan ke-{i+1} ditemukan: {tour_tree_size}\n")
+        estimated_tree_size = estimate_tree_size_from_m_sequence(possible_moves_counts)
+        estimated_tree_sizes.append(estimated_tree_size)
+        print(f"Estimasi tree size (berdasarkan rumus m-sequence) untuk barisan penjelajahan ke-{i+1}: {estimated_tree_size}")
+        ## print(f"Estimasi tree size saat barisan penjelajahan ke-{i+1} ditemukan: {tour_tree_size}\n")
 
     # Tampilkan statistik pencarian.
-    print(f"Estimasi tree size (jumlah node pada pohon pencarian): {tree_size[0]}")
-    print(f"Total penjelajahan yang ditemukan sejauh ini: {len(all_tours)}")
+    print("")
+    print(f"TOTAL dari semua estimasi-estimasi tree size (berdasarkan rumus m-sequence) untuk SEMUA barisan penjelajahan: {sum(estimated_tree_sizes)}")
+    ## print(f"Estimasi tree size (jumlah node pada pohon pencarian): {tree_size[0]}")
+    print(f"Total barisan penjelajahan yang ditemukan sejauh ini: {len(all_tours)}")
     print("")
 
 # Penjelasan:
