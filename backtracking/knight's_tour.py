@@ -1,10 +1,13 @@
 import sys, random
+from PIL import Image, ImageDraw
+import os
 
 # Penjelasan:
 # Mendefinisikan ukuran papan catur (6x6) dan pergerakan kuda yang dimodifikasi.
 # Alur berpikir:
 # Ukuran papan dan pergerakan kuda diatur agar algoritma dapat berjalan pada papan 6x6 dengan langkah unik (±3, ±2) dan (±2, ±3).
 BOARD_SIZE = 6
+SQUARE_SIZE = 80
 
 # Custom knight moves: (±3, ±2) and (±2, ±3)
 """
@@ -45,14 +48,15 @@ def knight_tour(x, y, move_num, board, path, all_tours, tree_size, possible_move
     # Jika semua kotak sudah dikunjungi, simpan jalur penjelajahan.
     if move_num == BOARD_SIZE * BOARD_SIZE - 1:
         print(f"=====> Penjelajahan lengkap ditemukan! Menyimpan solusi ke-{len(all_tours)+1}. <=====")
-        all_tours.append((list(path), tree_size[0], list(possible_moves_counts)))
+        if path not in [t[0] for t in all_tours]:
+            all_tours.append((list(path), tree_size[0], list(possible_moves_counts)))
         board[x][y] = -1
         path.pop()
         possible_moves_counts.pop()
         return
     
-    moves = MOVES[:]
-    random.shuffle(moves)
+    # moves = MOVES[:]
+    # random.shuffle(moves)
 
     # Coba semua kemungkinan langkah kuda.
     # Jika ingin lebih random lagi, ganti for loop di bawah ini untuk mengiterasikan
@@ -98,9 +102,46 @@ def print_tour_chess_board(tour):
     for move_number, (x, y) in enumerate(tour):
         board[x][y] = move_number + 1 # + 1 supaya langkah pertamanya itu 1, bukan 0
     # print papan caturnya
-    for y in range(BOARD_SIZE - 1, -1, -1):
+    for y in range(BOARD_SIZE):
         print(' '.join(f"{board[x][y]:2d}" for x in range(BOARD_SIZE)))
     print("")
+ 
+# generate tampilan dari setiap frame/langkah
+def draw_tour_frame(draw, tour, step):
+    light = (238, 238, 210)
+    dark = (118, 150, 86)
+    knight_color = (255, 0, 0)
+    for y in range(BOARD_SIZE):
+        for x in range(BOARD_SIZE):
+            color = light if (x + y) % 2 == 0 else dark
+            draw.rectangle(
+                [x * SQUARE_SIZE, y * SQUARE_SIZE, (x+1) * SQUARE_SIZE, (y+1) * SQUARE_SIZE],
+                fill=color
+            )
+    for i in range(step + 1):
+        x, y = tour[i]
+        cx = x * SQUARE_SIZE + SQUARE_SIZE // 2
+        cy = y * SQUARE_SIZE + SQUARE_SIZE // 2
+        draw.ellipse(
+            [cx - 15, cy - 15, cx + 15, cy + 15],
+            fill=knight_color
+        )
+        draw.text((cx - 5, cy - 8), str(i+1), fill=(255, 255, 255))
+
+# membuat gif perjalanan kuda
+def generate_gif(tour, filename):
+    frames = []
+    for step in range(len(tour)):
+        img = Image.new("RGB", (BOARD_SIZE * SQUARE_SIZE, BOARD_SIZE * SQUARE_SIZE))
+        draw = ImageDraw.Draw(img)
+        draw_tour_frame(draw, tour, step)
+        frames.append(img)
+    frames[0].save(filename, save_all=True, append_images=frames[1:], duration=300, loop=0)
+
+    # nyimpen gambar terakhir gif sebagai hasil akhir
+    final_frame_path = filename.replace(".gif", "_final.png")
+    frames[-1].save(final_frame_path)
+    print(f"Gambar akhir disimpan sebagai '{final_frame_path}'")
     
     
 # Untuk menampilkan perhitungan m-nya
@@ -166,22 +207,31 @@ def main():
                     possible_moves_counts = []
                     knight_tour(sx, sy, 0, board, path, all_tours, tree_size, possible_moves_counts, max_tours=4)
 
+    os.makedirs("knight_tour_gifs", exist_ok=True)
+
     # Tampilkan semua penjelajahan yang ditemukan.
     print("")
     for i, (tour, tour_tree_size, possible_moves_counts) in enumerate(all_tours):
+        
+        filename = f"knight_tour_gifs/knight_tour_{i+1}.gif"
+        print(f"Menyimpan animasi GIF ke-{i+1}...")
+        generate_gif(tour, filename)
+        print(f"GIF disimpan sebagai '{filename}'")
+
         print("")
         print(f"Penjelajahan ke-{i+1}:")
-        print_tour_chess_board(tour)
+        # print_tour_chess_board(tour)
         print_tour_sequence(tour)
         print_m_sequence(possible_moves_counts)
         estimated_tree_size = estimate_tree_size_from_m_sequence(possible_moves_counts)
         estimated_tree_sizes.append(estimated_tree_size)
         print(f"Estimasi tree size (berdasarkan rumus m-sequence) untuk barisan penjelajahan ke-{i+1}: {estimated_tree_size}")
-        ## print(f"Estimasi tree size saat barisan penjelajahan ke-{i+1} ditemukan: {tour_tree_size}\n")
+        # print(f"Estimasi tree size saat barisan penjelajahan ke-{i+1} ditemukan: {tour_tree_size}\n")
 
     # Tampilkan statistik pencarian.
     print("")
     print(f"TOTAL dari semua estimasi-estimasi tree size (berdasarkan rumus m-sequence) untuk SEMUA barisan penjelajahan: {sum(estimated_tree_sizes)}")
+    print(f"rata rata estimasi size tree: {sum(estimated_tree_sizes)/4}")
     ## print(f"Estimasi tree size (jumlah node pada pohon pencarian): {tree_size[0]}")
     print(f"Total barisan penjelajahan yang ditemukan sejauh ini: {len(all_tours)}")
     print("")
