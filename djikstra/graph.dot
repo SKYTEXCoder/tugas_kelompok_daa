@@ -1,12 +1,9 @@
 digraph G {
-    s -> u [label="10", color=black];
-    s -> x [label="5", color=red];
-    u -> v [label="1", color=red];
-    u -> x [label="2", color=black];
-    v -> y [label="4", color=black];
-    x -> u [label="3", color=red];
-    x -> v [label="9", color=black];
-    x -> y [label="2", color=red];
-    y -> s [label="7", color=black];
-    y -> v [label="6", color=black];
+    a -> b [label="5", color=red];
+    a -> d [label="7", color=red];
+    a -> e [label="10", color=red];
+    b -> c [label="6", color=red];
+    b -> e [label="14", color=black];
+    c -> d [label="9", color=black];
+    d -> e [label="8", color=black];
 }

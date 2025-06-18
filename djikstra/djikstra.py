@@ -51,14 +51,24 @@ def input_graph():
     """
     graph = {}
     n = int(input("Masukkan jumlah node: "))
-    nodes = input("Masukkan nama node (pisahkan spasi): ").split()
+    while True:
+        nodes = input(f"Masukkan {n} nama node (pisahkan spasi): ").split()
+        if len(nodes) != n:
+            print(f"Jumlah nama node yang dimasukkan ({len(nodes)}) tidak sesuai dengan jumlah node ({n}). Silakan ulangi.")
+        else:
+            break
     for node in nodes:
         graph[node] = {}
     m = int(input("Masukkan jumlah edge: "))
-    print("Masukkan edge (format: asal tujuan bobot), contoh: s u 10")
+    print("Masukkan edge (format: asal tujuan bobot), contoh: a b 10")
     for _ in range(m):
-        src, dst, w = input().split()
-        graph[src][dst] = int(w)
+        while True:
+            src, dst, w = input().split()
+            if src not in graph or dst not in graph:
+                print(f"Error: Node '{src}' atau '{dst}' tidak ada di daftar node. Silakan masukkan edge dengan node yang valid.")
+            else:
+                graph[src][dst] = int(w)
+                break
     return graph
 
 def write_dot(graph, previous_nodes, filename="graph.dot", highlight_tree=True):
@@ -99,7 +109,7 @@ if __name__ == "__main__":
             'y': {'s': 7, 'v': 6}
         }
 
-    start_node = input(f"Masukkan node awal (default: s): ") or "s"
+    start_node = input(f"Masukkan node awal: ") or "s"
     shortest_distances, previous_path_nodes = dijkstra(graph, start_node)
 
     print(f"\nHasil Algoritma Dijkstra dari Node '{start_node}':\n")
