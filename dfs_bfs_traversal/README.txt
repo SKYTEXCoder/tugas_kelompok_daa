@@ -1,7 +1,10 @@
 ===========================================================
 TUGAS KELOMPOK DAA - Penyelesaian Nomor 1
-Nama  : Dandy Arya Akbar
-NIM   : 1313623028
+Nama            : Dandy Arya Akbar
+Program Studi   : Ilmu Komputer
+Angkatan        : 2023
+Kelas           : A
+NIM             : 1313623028
 ===========================================================
 
 PROGRAM INI:

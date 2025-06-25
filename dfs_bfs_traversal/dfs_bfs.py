@@ -1,3 +1,12 @@
+"""
+TUGAS KELOMPOK DAA - Penyelesaian Nomor 1
+Nama            : Dandy Arya Akbar
+Program Studi   : Ilmu Komputer
+Angkatan        : 2023
+Kelas           : A
+NIM             : 1313623028
+"""
+
 from collections import deque
 import re, graphviz, tkinter, os
 from tkinter import filedialog
