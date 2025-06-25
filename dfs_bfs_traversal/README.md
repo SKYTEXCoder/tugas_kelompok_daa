@@ -1,7 +1,7 @@
 # Penyelesaian Nomor 1: Implementasi Algoritma Penelurusan BFS dan DFS
 
 Project ini merupakan sebuah tugas kelompok untuk mata kuliah **Desain dan Analisis Algoritma**.
-Tujuan utamanya adalah untuk mengimplementasikan dan mendemonstrasikan algoritma penelurusan **Depth-First Search (DFS)** dan **Breadth-First Search (BFS)** dalam sebuah graf yang memiliki sisi-sisi **TIDAK BERARAH** dan **BERBOBOT**
+Tujuan utamanya adalah untuk mengimplementasikan dan mendemonstrasikan algoritma penelurusan/traversal **Depth-First Search (DFS)** dan **Breadth-First Search (BFS)** dalam sebuah graf yang memiliki sisi-sisi **BERARAH** dan **TIDAK BERBOBOT**
 
 -----------------
 
